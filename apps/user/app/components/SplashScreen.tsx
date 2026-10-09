@@ -19,7 +19,7 @@ export default function SplashScreen() {
       >
         {/* Logo */}
         <Image
-          src="/vaad.svg"
+          src="/Vaad+.svg"
           alt="VAAD Media"
           width={50}
           height={32}

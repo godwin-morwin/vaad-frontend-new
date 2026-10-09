@@ -17,13 +17,13 @@ const TestimonialHero = ({
   badge = "OUR MERCHANT ONCE SAID",
 }: TestimonialHeroProps) => {
   return (
-    <section className="relative w-full py-14 min-h-[500px] flex items-center justify-center overflow-hidden">
+    <section className="relative w-full py-14 min-h-125 flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <Image
         src={backgroundImage || bgImg}
         alt="testimonial background"
         fill
-        className="object-cover"
+        className="object-cover object-top"
         priority
       />
 

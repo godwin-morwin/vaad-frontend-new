@@ -25,7 +25,7 @@ export default function SectionHeader({
           className="inline-flex transition-all hover:underline underline-offset-4 items-center gap-2 text-[#0177AB] font-medium sm:text-[17.44px] text-[4vw] mt-4 md:mt-0 group"
         >
           <span>View all</span>
-          <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          {/* <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /> */}
         </Link>
       )}
     </div>

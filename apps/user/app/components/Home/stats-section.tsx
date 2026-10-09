@@ -7,11 +7,11 @@ interface StatCardProps {
 
 function StatCard({ title, description }: StatCardProps) {
   return (
-    <div className="">
-      <h3 className="text-[#141212] font-semibold sm:text-[32px] text-[5vw] uppercase">
+    <div className="h-full rounded-[10px] border border-[#0177AB] p-5 sm:p-6">
+      <h3 className="text-2xl font-semibold uppercase text-[#141212] sm:text-[28px]">
         {title}
       </h3>
-      <p className="text-[#141212] sm:text-[24px] text-[4vw] font-normal mt-2 leading-relaxed">
+      <p className="mt-2 text-lg font-normal leading-snug text-[#141212] sm:text-[20px]">
         {description}
       </p>
     </div>
@@ -55,7 +55,7 @@ export default function StatsSection() {
           </p>
         </div>
 
-        <div className='w-full bg-[#F0F7FB] rounded-xl h-auto mt-10 p-8 flex md:flex-row flex-col justify-between gap-5'>
+        <div className="mt-10 grid w-full grid-cols-1 gap-5 md:grid-cols-4">
            {stats.map((stat, index) => (
             <StatCard
               key={index}

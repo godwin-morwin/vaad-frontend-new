@@ -326,7 +326,7 @@ export default function BillboardCard({ billboard }: BillboardCardProps) {
   return (
     <Link
       href={billboardUrl}
-      className="group bg-[#FAFAFB] rounded-[12px] p-5 overflow-hidden transition-shadow duration-300 cursor-pointer block"
+      className="group bg-[#FAFAFB] rounded-[12px] p-4 overflow-hidden transition-shadow duration-300 cursor-pointer block"
     >
       {/* Image Container */}
       <div className="relative h-[264px] w-full overflow-hidden rounded-[8px] bg-gray-100">
@@ -353,14 +353,8 @@ export default function BillboardCard({ billboard }: BillboardCardProps) {
 
         {/* Category Badge */}
        <div className='flex justify-between items-start absolute top-3 px-3 w-full'>
-         <div className=" bg-[#55A4C7] backdrop-blur-sm px-[13.57px] py-[2.91px] font-medium rounded-[6px] text-xs text-white z-10">
-          {/* {fields.serviceType || fields.mediaType || "Billboard"} */}
-          Available
-        </div>
-
          <div className=" bg-[#E7F8F2] backdrop-blur-sm px-[13.57px] py-[2.91px] font-medium rounded-full text-xs text-[#0B835C] z-10">
-          {/* {fields.serviceType || fields.mediaType || "Billboard"} */}
-          Booked . 2d
+          Available
         </div>
        </div>
 
@@ -461,12 +455,12 @@ export default function BillboardCard({ billboard }: BillboardCardProps) {
         </div>
       </div>
 
-      <div className='w-full h-px border border-[#d5d4d45e] my-5'/>
+      <div className="my-5 h-px w-full bg-[#d5d4d45e]" />
 
       {/* Content */}
       <div className="">
         {/* Rating */}
-        <div className="flex items-center gap-2 mb-2">
+        {/* <div className="flex items-center gap-2 mb-2">
           <div className="flex items-center">
             <Star className="w-4 h-4 fill-[#bfa900] text-[#bfa900]" />
             <span className="md:text-[16px] text-[3.2vw] font-medium text-[#626060] ml-0.5">
@@ -476,7 +470,7 @@ export default function BillboardCard({ billboard }: BillboardCardProps) {
           <span className="text-medium text-[#626060] text-[3.2vw] md:text-[16px]">
             ({fields.reviews || 0} reviews)
           </span>
-        </div>
+        </div> */}
 
         {/* Title */}
         <h3 className="md:text-[24px] text-[5.5vw] font-bold text-[#141212] mb-1 line-clamp-1">
@@ -484,9 +478,9 @@ export default function BillboardCard({ billboard }: BillboardCardProps) {
         </h3>
 
         {/* Description */}
-        <p className="md:text-[16px] text-[3.5vw] text-[#626060] mb-10 font-medium line-clamp-2">
+        {/* <p className="md:text-[16px] text-[3.5vw] text-[#626060] mb-10 font-medium line-clamp-2">
           {description}
-        </p>
+        </p> */}
 
         {/* Location */}
         <div className="flex items-start gap-2 mb-2">
@@ -507,14 +501,14 @@ export default function BillboardCard({ billboard }: BillboardCardProps) {
             {originalPrice && (
               <span className="md:text-[16px] text-[3.5vw] text-[#696F8C] font-medium">
                 {/* ₦{originalPrice.toLocaleString("en-US")} */}
-                / pole
+                / mo
               </span>
             )}
           </div>
 
            <Link
                             href=""
-                            className="px-4 py-2.5 bg-[#0088b5] hover:bg-[#007a9e] text-white rounded-xl font-semibold text-sm transition-all"
+                            className="px-4 py-2 bg-[#0088b5] hover:bg-[#007a9e] text-white rounded-[8px] font-semibold text-sm transition-all"
                           >
                             Book Now
                           </Link>

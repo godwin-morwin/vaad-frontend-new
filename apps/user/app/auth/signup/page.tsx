@@ -218,7 +218,7 @@ export default function SignUpPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8 lg:mb-0"
         >
-          <Image src="/vaad.svg" alt="VAAD Media" width={120} height={120} />
+          <Image src="/Vaad+.svg" alt="VAAD Media" width={120} height={120} />
         </motion.div>
 
         <AnimatePresence mode="wait">

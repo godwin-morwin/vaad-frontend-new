@@ -12,7 +12,7 @@ interface BillboardSectionProps {
 }
 
 export default function BusShelterSection({
-  title = "Bus Shelter Advertising",
+  title = "Bus Shelter",
   subtitle = "Reach commuters up close with targeted placements in high-footfall waiting areas.",
   showViewAll = true,
   limit = 3,
@@ -29,13 +29,14 @@ export default function BusShelterSection({
         {/* LEFT LARGE CARD */}
         <div className="relative rounded-xl overflow-hidden h-[460px] w-full">
           <img
-            src="/images/b1.jpg"
+            src="/images/bs-1.png"
             alt="Promo"
             className="w-full h-full object-cover"
           />
 
           {/* Faded Bottom Overlay */}
           <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
+
 
           {/* Content at Bottom */}
           <div className="absolute bottom-0 inset-x-0 p-7 flex justify-between text-white w-full items-center z-10">
@@ -50,23 +51,23 @@ export default function BusShelterSection({
         </div>
 
         {/* RIGHT GRID */}
-        <div className="relative rounded-xl overflow-hidden h-[460px] w-full">
+        <div className="relative rounded-xl overflow-hidden h-115 w-[800px]">
           <img
-            src="/images/b2.jpg"
+            src="/images/bs-2.png"
             alt="Promo"
             className="w-full h-full object-cover"
           />
 
           {/* Badge */}
-          <div className="absolute top-4 left-4 bg-[#E7F8F2] font-semibold text-[#0B835C] text-xs px-3 py-1 rounded-full z-10">
+          {/* <div className="absolute top-4 left-4 bg-[#E7F8F2] font-semibold text-[#0B835C] text-xs px-3 py-1 rounded-full z-10">
             UP TO 50% OFF
-          </div>
+          </div> */}
 
           {/* Faded Bottom Overlay */}
           <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
 
           {/* Content at Bottom */}
-          <div className="absolute bottom-0 inset-x-0 p-7 flex justify-between text-white w-full items-center z-10">
+          <div className="absolute bottom-0 inset-x-0 p-7 flex justify-between text-white w-full items-end z-10">
             <h3 className="text-2xl font-bold leading-snug whitespace-pre-line">
               Free Trade{"\n"}Commuters Zone
             </h3>

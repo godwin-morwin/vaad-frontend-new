@@ -148,7 +148,7 @@ const HotDealsSection = () => {
             </motion.div>
 
             {/* View All Link Button */}
-            <div className="mt-12 text-center">
+            {/* <div className="mt-12 text-center">
               <Link
                 href="/billboards?hotDeal=true"
                 className="inline-flex items-center gap-2 bg-[#0177AB] hover:bg-[#015f8a] text-white px-7 py-3 rounded-lg text-sm font-semibold transition-colors duration-200 shadow-sm"
@@ -156,7 +156,7 @@ const HotDealsSection = () => {
                 View All Deals
                 <ChevronRight size={16} />
               </Link>
-            </div>
+            </div> */}
           </>
         )}
       </div>

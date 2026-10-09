@@ -1,9 +1,13 @@
-// app/components/SearchBox.tsx
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Search, ChevronDown, Loader2 } from "lucide-react";
+import Select, { StylesConfig } from "react-select";
+
+interface SelectOption {
+  label: string;
+  value: string;
+}
 
 interface Filters {
   mediaType: string;
@@ -53,16 +57,8 @@ export default function SearchBox({
     return assets.mediaAndProductsTypes[filters.mediaType] || [];
   }, [filters.mediaType, assets]);
 
-  // Debug logging
-  useEffect(() => {
-    console.log("Media Types available:", mediaTypes);
-    console.log("Current mediaType:", filters.mediaType);
-    console.log("Available product types:", availableProductTypes);
-  }, [mediaTypes, filters.mediaType, availableProductTypes]);
-
   // Handle media type change
   const handleMediaTypeChange = (value: string) => {
-    console.log("Changing media type to:", value);
     handleFilterChange("mediaType", value);
     // Set product type to first available for this media type
     const productTypes = assets?.mediaAndProductsTypes?.[value] || [];
@@ -105,45 +101,87 @@ export default function SearchBox({
       onChange: (value: string) => handleFilterChange("location", value),
       placeholder: "Select location",
     },
-    {
-      label: "Major Markets",
-      value: filters.location,
-      key: "location" as const,
-      options: locations,
-      onChange: (value: string) => handleFilterChange("location", value),
-      placeholder: "Select Market",
-    },
   ];
+
+  const selectStyles: StylesConfig<SelectOption, false> = {
+    control: (base, state) => ({
+      ...base,
+      minHeight: 48,
+      borderRadius: 10,
+      borderColor: state.isFocused ? "#0088b5" : "#e5e7eb",
+      backgroundColor: "#f8fafc",
+      boxShadow: state.isFocused ? "0 0 0 3px rgba(0, 136, 181, 0.14)" : "none",
+      transition: "border-color 150ms ease, box-shadow 150ms ease",
+      "&:hover": {
+        borderColor: state.isFocused ? "#0088b5" : "#cbd5e1",
+      },
+    }),
+    valueContainer: (base) => ({ ...base, padding: "2px 12px" }),
+    placeholder: (base) => ({ ...base, color: "#94a3b8" }),
+    singleValue: (base) => ({ ...base, color: "#1e293b" }),
+    indicatorSeparator: () => ({ display: "none" }),
+    dropdownIndicator: (base, state) => ({
+      ...base,
+      color: state.isFocused ? "#0088b5" : "#94a3b8",
+      transition: "color 150ms ease",
+      "&:hover": { color: "#0088b5" },
+    }),
+    menu: (base) => ({
+      ...base,
+      zIndex: 20,
+      borderRadius: 10,
+      overflow: "hidden",
+      boxShadow: "0 10px 24px rgba(15, 23, 42, 0.14)",
+    }),
+    option: (base, state) => ({
+      ...base,
+      color: "#1e293b",
+      backgroundColor: state.isSelected
+        ? "#0088b5"
+        : state.isFocused
+          ? "#e6f6fa"
+          : "white",
+      cursor: "pointer",
+      padding: "10px 12px",
+      "&:active": { backgroundColor: "#ccecf3" },
+    }),
+  };
+
+  const renderSelect = (item: (typeof desktopFields)[number]) => {
+    const options = item.options.map((option) => ({
+      label: option,
+      value: option,
+    }));
+    const selectedOption = options.find((option) => option.value === item.value) || null;
+
+    return (
+      <Select<SelectOption, false>
+        value={selectedOption}
+        options={options}
+        onChange={(option) => item.onChange(option?.value || "")}
+        isDisabled={assetsLoading || item.disabled}
+        isLoading={assetsLoading}
+        isClearable
+        placeholder={item.placeholder}
+        noOptionsMessage={() => "No options available"}
+        loadingMessage={() => "Loading options..."}
+        styles={selectStyles}
+        classNamePrefix="hero-select"
+      />
+    );
+  };
 
   return (
     <>
       {/* ---------------- DESKTOP ---------------- */}
       <div className="hidden md:block mt-12 bg-white rounded-lg shadow-lg p-6 w-full">
-        <div className="grid grid-cols-5 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           {desktopFields.map((item) => (
             <div key={item.key}>
               <label className="text-sm text-gray-600 mb-2 block">
                 {item.label}
               </label>
-              <select
-                value={item.value}
-                onChange={(e) => item.onChange(e.target.value)}
-                disabled={assetsLoading || item.disabled}
-                className="w-full px-3 py-3 bg-gray-50 rounded-lg text-sm focus:ring-2 focus:ring-[#0088b5] disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <option value="">{item.placeholder}</option>
-                {assetsLoading ? (
-                  <option disabled>Loading...</option>
-                ) : item.options.length === 0 ? (
-                  <option disabled>No options available</option>
-                ) : (
-                  item.options.map((opt: string) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))
-                )}
-              </select>
+              {renderSelect(item)}
             </div>
           ))}
 
@@ -193,25 +231,7 @@ export default function SearchBox({
                 <label className="text-sm text-gray-600 mb-2 block">
                   {item.label}
                 </label>
-                <select
-                  value={item.value}
-                  onChange={(e) => item.onChange(e.target.value)}
-                  disabled={assetsLoading || item.disabled}
-                  className="w-full px-4 py-4 bg-gray-50 rounded-xl text-sm focus:ring-2 focus:ring-[#0088b5] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <option value="">{item.placeholder}</option>
-                  {assetsLoading ? (
-                    <option disabled>Loading...</option>
-                  ) : item.options.length === 0 ? (
-                    <option disabled>No options available</option>
-                  ) : (
-                    item.options.map((opt: string) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))
-                  )}
-                </select>
+                {renderSelect(item)}
               </div>
             ))}
 

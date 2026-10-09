@@ -1,7 +1,7 @@
 "use client";
 
 import ConsultationCTA from "./components/ConsultationCTA";
-import AvailableBillboardsSection from "./components/Home/AvailableBillboardsSection";
+// import AvailableBillboardsSection from "./components/Home/AvailableBillboardsSection";
 import Footer from "./components/Home/Footer";
 import FrequentSection from "./components/Home/Frequent";
 import Hero from "./components/Home/Hero";
@@ -16,6 +16,9 @@ import BillboardSection from "./components/Home/BillboardSection";
 import LedBillboardSection from "./components/Home/LedBillboard";
 import LamppostSection from "./components/Home/Lamppost";
 import AirportSection from "./components/Home/Airport";
+import BusShelterSection from "./components/Home/BusShelter";
+import TransitSection from "./components/Home/Transit";
+import RetailStoreSection from "./components/Home/RetailStore";
 
 export default function HomePage() {
   return (
@@ -25,16 +28,17 @@ export default function HomePage() {
       <Hero />
       <Trusted />
       <StatsSection />
-      <AvailableBillboardsSection />
+      {/* <AvailableBillboardsSection /> */}
       <BillboardSection />
       <LedBillboardSection />
-     {/*<BillboardPromo />*/}
+      <TransitSection />
+      {/*<BillboardPromo />*/}
       <LamppostSection />
       <AirportSection />
-     {/*<BusShelterSection />*/}
+      <BusShelterSection />
       <HotDealsSection />
       <LargeFormatSection />
-      {/*<RetailStoreSection />*/}
+      <RetailStoreSection />
       <FrequentSection />
       <TestimonialSection />
       {/* <FeaturedPartnersSection /> */}

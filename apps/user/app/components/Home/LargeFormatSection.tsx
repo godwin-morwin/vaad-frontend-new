@@ -10,8 +10,8 @@ const LargeFormatSection = () => {
         <div className="mt-10">
           <LargeFormatCard
             title="Large Format Print"
-            subtitle="Add print and installation to any booking at checkout. We handle production and mounting. Request a print quote."
-            image="/images/lg.jpg"
+            subtitle="We bring your campaign to life on every surface production and mounting handled end to end."
+            image="/images/lg.png"
           />
         </div>
       </div>
