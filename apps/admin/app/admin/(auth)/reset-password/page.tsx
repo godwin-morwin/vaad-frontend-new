@@ -148,7 +148,7 @@ export default function ResetPasswordPage() {
 
         {/* Logo */}
         <div className="mb-12">
-          <Image src="/vaad.svg" alt="VAAD Media" width={120} height={120} />
+          <Image src="/Vaad+.svg" alt="VAAD Media" width={120} height={120} />
         </div>
 
         {/* Reset Password Form Container */}

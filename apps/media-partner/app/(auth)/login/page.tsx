@@ -94,7 +94,7 @@ export default function LoginPage() {
       <div className="w-full lg:w-1/2 flex flex-col justify-between items-center px-6 sm:px-12 lg:px-24 xl:px-32 py-8 lg:py-12">
         {/* Logo */}
         <div className="mb-8 lg:mb-0">
-          <Image src="/vaad.svg" alt="VAAD Media" width={120} height={120} />
+          <Image src="/Vaad+.svg" alt="VAAD Media" width={120} height={120} />
         </div>
 
         {/* Login Form */}

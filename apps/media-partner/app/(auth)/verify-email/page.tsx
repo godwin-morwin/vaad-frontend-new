@@ -58,7 +58,7 @@ export default function VerifyEmailPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6">
-      <Image src="/vaad.svg" alt="VAAD Media" width={120} height={120} className="mb-8" />
+      <Image src="/Vaad+.svg" alt="VAAD Media" width={120} height={120} className="mb-8" />
       
       <h1 className="text-2xl font-bold text-[#0D0A19] mb-4">Verify Your Email</h1>
       <p className="text-[#9A9EA7] text-center mb-6">

@@ -238,7 +238,7 @@ export default function SignUpPage() {
       <div className="min-h-screen flex flex-col lg:flex-row bg-black">
         <div className="hidden lg:flex lg:w-1/2 relative bg-black text-white">
           <div className="absolute top-6 left-6">
-            <Image src="/vaad.svg" alt="VAAD Media" width={84} height={84} />
+            <Image src="/Vaad+.svg" alt="VAAD Media" width={84} height={84} />
           </div>
           <div className="w-full h-full flex items-center justify-center p-12">
             <div className="max-w-lg">
@@ -264,7 +264,7 @@ export default function SignUpPage() {
       {/* Left Side - Info & Testimonial */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-black text-white">
         <div className="absolute top-6 left-6">
-          <Image src="/vaad.svg" alt="VAAD Media" width={84} height={84} />
+          <Image src="/Vaad+.svg" alt="VAAD Media" width={84} height={84} />
         </div>
         <div className="w-full h-full flex items-center justify-center p-12">
           <div className="max-w-lg">
@@ -296,7 +296,7 @@ export default function SignUpPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8 lg:mb-0"
         >
-          <Image src="/vaad.svg" alt="VAAD Media" width={120} height={120} />
+          <Image src="/Vaad+.svg" alt="VAAD Media" width={120} height={120} />
         </motion.div>
 
         <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full lg:mx-0">

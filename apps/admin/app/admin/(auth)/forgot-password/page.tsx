@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
 
         {/* Logo */}
         <div className="mb-20">
-          <Image src="/vaad.svg" alt="VAAD Media" width={120} height={120} />
+          <Image src="/Vaad+.svg" alt="VAAD Media" width={120} height={120} />
         </div>
 
         {/* Forgot Password Form Container */}

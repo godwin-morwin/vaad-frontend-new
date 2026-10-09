@@ -273,7 +273,7 @@ export default function Sidebar() {
       <div className="flex items-center justify-between px-4 py-4">
         <Link href="/admin" className="flex items-center gap-2">
           <Image
-            src="/vaad.svg"
+            src="/Vaad+.svg"
             alt="VAAD Media"
             width={100}
             height={34}
