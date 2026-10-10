@@ -1,330 +1,261 @@
-// app/blog/[slug]/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
-import { motion } from "framer-motion";
-import { blogService, Blog, BlogComment } from "@/app/lib/blog/blog-service";
-import MarkdownRenderer from "@/app/components/blog/MarkdownRenderer";
-import Sidebar from "@/app/components/blog/Sidebar";
-import { useToast } from "@/app/contexts/toast-context";
 import Link from "next/link";
+import Image from "next/image";
+import { useParams } from "next/navigation";
 import Navbar from "@/app/components/layout/Navbar";
+import Footer from "@/app/components/Home/Footer";
+import PageBanner from "@/app/components/PageBanner";
+import { Calendar, Clock, Search } from "lucide-react";
+
+/* ---------- mock post data ---------- */
+const post = {
+  slug: "governing-cyberspace-during-a-crisis-in-trust",
+  title: "Governing Cyberspace during a crisis in Trust",
+  author: "Tunde Onakoya",
+  authorAvatar: "/images/avatar.jpg",
+  date: "16 Sept 2026",
+  readTime: "3 min read",
+  tags: ["BILLBOARDS BOOKING", "COMPANY NEWS"],
+  heroImage: "/images/board.jpg",
+  content: [
+    {
+      type: "paragraph",
+      text: "It is almost impossible to read the news without coming across a lead story cataloguing the latest cyber breach or misuse of data. Intellectual property is being stolen from companies at an alarming rate. Foreign actors are meddling in elections. Criminals use the dark recesses of the internet to sell drugs, guns and even people. The volume of these events lays bare the paradox of the digital economy and cyber security. On one hand, technology has led to convenience, efficiency and wealth creation. On the other hand, this great push to digitize society has meant building inherent vulnerability into the core of the economic taking place atop a deeply fragmented and underdeveloped system of global rules.",
+    },
+    {
+      type: "heading",
+      text: "The essentials of cybersecurity solutions",
+    },
+    {
+      type: "paragraph",
+      text: "Enhancing cyber security readiness and network resilience in both government and private sector systems makes it more difficult for adversaries, both foreign and domestic, to exploit Canadian systems. This, in turn, enhances trust in the digital ecosystem in Canada, because it makes it less likely that personal, financial or corporate information will be compromised by security breaches or unscrupulous data practices. By establishing greater domestic cyber security readiness and resilience, it also makes it a much more credible effort for Canada to try and position itself as a global leader in the field.",
+    },
+    {
+      type: "heading",
+      text: "Major elements that we offer:",
+    },
+    {
+      type: "list",
+      items: [
+        "The need to make tough decisions as a company grows",
+        "Why people are more important than technology in any company.",
+        "The importance of video calls in building team connectivity.",
+        "The role of engagement in a company's culture and why it's key to success.",
+      ],
+    },
+    {
+      type: "heading",
+      text: "The essentials of cybersecurity solutions",
+    },
+    {
+      type: "paragraph",
+      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut et massa mi. Aliquam in hendrerit urna. Pellentesque sit amet sapien fringilla, mattis ligula consectetur, ultrices mauris. Maecenas vitae mattis tellus. Nullam quis imperdiet augue. Vestibulum auctor ornare leo, non suscipit magna interdum eu. Curabitur pellentesque nibh nibh, at maximus ante fermentum sit amet. Pellentesque commodo lacus at sodales sodales.",
+    },
+    {
+      type: "paragraph",
+      text: "Quisque sagittis orci ut diam condimentum, vel eulismod erat placerat, in iaculis arcu eros, eget tempus orci facilisis id. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut et massa mi. Aliquam in hendrerit urna. Pellentesque sit amet sapien fringilla, mattis ligula consectetur, ultrices mauris. Maecenas vitae mattis tellus. Nullam quis imperdiet augue. Vestibulum auctor ornare leo, non suscipit magna interdum eu.",
+    },
+  ],
+};
+
+const sidebarFeatured = [
+  {
+    id: "1",
+    slug: "digital-vs-static-billboards-roi",
+    title: "Digital Billboards vs. Static Billboards: Which Delivers Better ROI?",
+    image: "/images/board.jpg",
+    date: "28 June, 2025",
+  },
+  {
+    id: "2",
+    slug: "digital-vs-static-2",
+    title: "Digital Billboards vs. Static Billboards: Which Delivers Better ROI?",
+    image: "/images/board.jpg",
+    date: "28 June, 2025",
+  },
+  {
+    id: "3",
+    slug: "digital-vs-static-3",
+    title: "Digital Billboards vs. Static Billboards: Which Delivers Better ROI?",
+    image: "/images/board.jpg",
+    date: "28 June, 2025",
+  },
+];
+
+function Tag({ label }: { label: string }) {
+  return (
+    <span className="inline-flex px-2.5 py-0.5 rounded-full bg-[#F2F4F7] text-[10px] font-semibold tracking-wide text-[#667185] uppercase">
+      {label}
+    </span>
+  );
+}
 
 export default function BlogDetailPage() {
   const params = useParams();
-  const router = useRouter();
-  const { showToast } = useToast();
-  const slug = params.slug as string;
+  // In production: fetch post by params.slug
+  void params;
 
-  const [blog, setBlog] = useState<Blog | null>(null);
-  const [comments, setComments] = useState<BlogComment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    comment: "",
-  });
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Navbar transparent />
+      </div>
 
-  // Helper functions
-  const formatDate = (dateString?: string): string => {
-    if (!dateString) return "";
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return "";
-      return date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    } catch {
-      return "";
-    }
-  };
+      <PageBanner
+        showHome={false}
+        backgroundImage="/images/board.jpg"
+        title="Blog"
+        subtitle="Stay ahead with our latest thinking. Stay informed on everything shaping outdoor advertising."
+      />
 
-  const getImageUrl = (image?: string): string => {
-    if (image && image.trim()) return image;
-    return "https://images.unsplash.com/photo-1612332883331-e8ea07a15f14?q=80&w=774&auto=format&fit=crop";
-  };
+      <section className="px-4 sm:px-8 lg:px-16 py-10 lg:py-14">
+        <div className="max-w-6xl mx-auto">
+          {/* Article header */}
+          <div className="mb-6">
+            <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#101928] leading-tight max-w-3xl">
+              {post.title}
+            </h1>
 
-  const getHeadline = (blog: Blog): string => {
-    return blog.headline || blog.title || "Untitled Post";
-  };
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2 text-sm text-[#667185]">
+                <span className="flex items-center gap-2">
+                  <span className="relative w-7 h-7 rounded-full overflow-hidden bg-gray-200 shrink-0">
+                    {post.authorAvatar && (
+                      <Image
+                        src={post.authorAvatar}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    )}
+                  </span>
+                  By {post.author}
+                </span>
+                <span className="text-[#D0D5DD]">|</span>
+                <span className="flex items-center gap-1">
+                  <Calendar size={14} />
+                  {post.date}
+                </span>
+                <span className="text-[#D0D5DD]">|</span>
+                <span className="flex items-center gap-1">
+                  <Clock size={14} />
+                  {post.readTime}
+                </span>
+              </div>
 
-  const getCategory = (blog: Blog): string => {
-    return blog.category || "Blog";
-  };
-
-  const getReadTime = (blog: Blog): number => {
-    // Calculate read time based on content length (approx 200 words per minute)
-    const content = blog.body || blog.content || "";
-    const wordCount = content.split(/\s+/).length;
-    return Math.max(1, Math.ceil(wordCount / 200));
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Try to fetch by slug first, if that fails, try by ID
-        let blogData: Blog | null = null;
-        try {
-          blogData = await blogService.getBlogBySlug(slug);
-        } catch (slugError) {
-          console.log("Fetch by slug failed, trying by ID...");
-          blogData = await blogService.getBlogById(slug);
-        }
-
-        if (!blogData) {
-          router.push("/not-found");
-          return;
-        }
-
-        const commentsData = await blogService.getComments(blogData._id);
-        setBlog(blogData);
-        setComments(commentsData);
-      } catch (error) {
-        console.error("Failed to fetch blog:", error);
-        router.push("/not-found");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (slug) {
-      fetchData();
-    }
-  }, [slug, router]);
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmitComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.name || !formData.email || !formData.comment) {
-      showToast?.({
-        type: "error",
-        message: "Please fill in all fields",
-        duration: 3000,
-      });
-      return;
-    }
-
-    if (!blog) return;
-
-    setSubmitting(true);
-    try {
-      const newComment = await blogService.addComment(blog._id, formData);
-      setComments([newComment, ...comments]);
-      setFormData({ name: "", email: "", comment: "" });
-      showToast?.({
-        type: "success",
-        message: "Comment added successfully",
-        duration: 3000,
-      });
-    } catch (error) {
-      console.error("Failed to add comment:", error);
-      showToast?.({
-        type: "error",
-        message: "Failed to add comment",
-        duration: 3000,
-      });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="bg-[#f5f7fa] py-16">
-        <div className="container mx-auto px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-4 gap-10">
-          <div className="lg:col-span-1">
-            <div className="space-y-6">
-              <div className="bg-white p-4 rounded-lg shadow-sm animate-pulse h-24" />
-              <div className="bg-white p-4 rounded-lg shadow-sm animate-pulse h-48" />
-              <div className="bg-white p-4 rounded-lg shadow-sm animate-pulse h-64" />
-            </div>
-          </div>
-          <div className="lg:col-span-3">
-            <div className="bg-white p-6 rounded-lg shadow-sm animate-pulse">
-              <div className="h-[350px] bg-gray-200 rounded-md mb-6" />
-              <div className="h-4 bg-gray-200 rounded w-1/3 mb-2" />
-              <div className="h-8 bg-gray-200 rounded w-3/4 mb-4" />
-              <div className="space-y-2">
-                <div className="h-3 bg-gray-200 rounded w-full" />
-                <div className="h-3 bg-gray-200 rounded w-full" />
-                <div className="h-3 bg-gray-200 rounded w-2/3" />
+              <div className="flex flex-wrap gap-2">
+                {post.tags.map((t) => (
+                  <Tag key={t} label={t} />
+                ))}
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    );
-  }
 
-  if (!blog) {
-    return null;
-  }
+          {/* Hero image */}
+          <div className="relative w-full h-[240px] sm:h-[360px] lg:h-[420px] rounded-2xl overflow-hidden mb-10">
+            <Image
+              src={post.heroImage}
+              alt={post.title}
+              fill
+              className="object-cover"
+              unoptimized
+              priority
+            />
+          </div>
 
-  const readTime = getReadTime(blog);
+          {/* Content + Sidebar */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
+            {/* Article body */}
+            <article className="lg:col-span-8 prose prose-slate max-w-none">
+              <h2 className="text-xl font-semibold text-[#101928] !mt-0">
+                {post.title}
+              </h2>
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <div className="fixed top-0 left-0 right-0 z-50">
-        <Navbar />
-      </div>
+              {post.content.map((block, i) => {
+                if (block.type === "heading") {
+                  return (
+                    <h3
+                      key={i}
+                      className="text-base font-semibold text-[#101928] mt-8 mb-3"
+                    >
+                      {block.text}
+                    </h3>
+                  );
+                }
+                if (block.type === "list") {
+                  return (
+                    <ul key={i} className="list-disc pl-5 space-y-2 text-sm text-[#475467] my-4">
+                      {block.items?.map((item, j) => (
+                        <li key={j}>{item}</li>
+                      ))}
+                    </ul>
+                  );
+                }
+                return (
+                  <p key={i} className="text-sm text-[#475467] leading-relaxed mb-4">
+                    {block.text}
+                  </p>
+                );
+              })}
+            </article>
 
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-[#0088b5] to-[#006d91] text-white pt-24 pb-16">
-        {/* Background GIF */}
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="/video/vaad-bg.gif"
-            alt="VAAD Media Billboard"
-            fill
-            priority
-            unoptimized
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-black/50" />
-        </div>
+            {/* Sidebar */}
+            <aside className="lg:col-span-4 space-y-6">
+              {/* Search */}
+              <div className="relative">
+                <Search
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#98A2B3]"
+                />
+                <input
+                  type="search"
+                  placeholder="Type to search..."
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E4E7EC] text-sm text-[#101928] placeholder:text-[#98A2B3] focus:outline-none focus:ring-2 focus:ring-[#0177AB]/20 focus:border-[#0177AB] transition"
+                />
+              </div>
 
-        {/* Hero Content */}
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 pt-16">
-          <div className="max-w-3xl mx-auto text-center flex flex-col items-center">
-            <h1 className="text-3xl md:text-[68.36px] font-bold mb-4">Blog</h1>
-            <p className="text-lg md:text-[15.19px] font-semibold text-white mb-8 max-w-100 text-center">
-              Lekki’s evolving skyline isn’t just about architecture — it’s a
-              hotspot for outdoor advertising. In 2025, brands are turning to
-              premium billboard placements.
-            </p>
-            <div className="flex items-center justify-center gap-2 text-sm text-white/80">
-              <Link href="/" className="hover:text-white transition-colors">
-                Home
-              </Link>
-              <span>&gt;</span>
-              <span className="text-white">Blog</span>
-            </div>
+              {/* Featured posts */}
+              <div className="bg-white rounded-2xl border border-[#E4E7EC] p-5">
+                <h3 className="text-sm font-semibold text-[#101928] mb-4">
+                  Featured posts
+                </h3>
+
+                <div className="space-y-4">
+                  {sidebarFeatured.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={`/blog/${item.slug}`}
+                      className="flex gap-3 group"
+                    >
+                      <div className="relative w-16 h-14 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                        <Image
+                          src={item.image}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs text-[#98A2B3] mb-0.5">
+                          {item.date}
+                        </p>
+                        <p className="text-sm font-medium text-[#344054] leading-snug line-clamp-2 group-hover:text-[#0177AB] transition">
+                          {item.title}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </aside>
           </div>
         </div>
       </section>
 
-      <div className="container mx-auto p-16 grid grid-cols-1 lg:grid-cols-4 gap-10">
-        {/* Sidebar */}
-        <Sidebar />
-
-        {/* Content */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="lg:col-span-3"
-        >
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="relative w-full h-[350px] mb-6">
-              <Image
-                src={getImageUrl(blog.image)}
-                alt={getHeadline(blog)}
-                fill
-                className="object-cover rounded-md"
-                unoptimized
-              />
-            </div>
-
-            <div className="text-sm text-gray-500 mb-2 flex items-center gap-3">
-              <span>{getCategory(blog)}</span>
-              <span>•</span>
-              <span>{formatDate(blog.createdAt || blog.date)}</span>
-              <span>•</span>
-              <span>{readTime} min read</span>
-            </div>
-
-            <h1 className="text-2xl font-bold mb-4">{getHeadline(blog)}</h1>
-
-            {/* Render content - use body from API */}
-            <MarkdownRenderer content={blog.body || blog.content || ""} />
-          </div>
-
-          {/* Comments */}
-          <div className="bg-white p-6 rounded-lg shadow-sm mt-8">
-            <h3 className="font-semibold mb-4">Comments ({comments.length})</h3>
-
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              {comments.length === 0 ? (
-                <p className="text-gray-500 text-sm">
-                  No comments yet. Be the first to comment!
-                </p>
-              ) : (
-                comments.map((comment) => (
-                  <div key={comment._id} className="flex gap-3">
-                    <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white font-semibold">
-                      {comment.name?.charAt(0)?.toUpperCase() || "U"}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{comment.name}</p>
-                      <p className="text-xs text-gray-500">
-                        {formatDate(comment.createdAt)}
-                      </p>
-                      <p className="text-sm mt-1">{comment.comment}</p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Leave Comment */}
-          <div className="bg-white p-6 rounded-lg shadow-sm mt-8">
-            <h3 className="font-semibold mb-4">Leave a comment</h3>
-
-            <form onSubmit={handleSubmitComment} className="space-y-4">
-              <input
-                name="name"
-                placeholder="Name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full border px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0088b5]"
-                required
-              />
-              <input
-                name="email"
-                type="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full border px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0088b5]"
-                required
-              />
-              <textarea
-                name="comment"
-                placeholder="Comment"
-                value={formData.comment}
-                onChange={handleInputChange}
-                className="w-full border px-3 py-2 rounded-md text-sm h-28 focus:outline-none focus:ring-2 focus:ring-[#0088b5]"
-                required
-              />
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="bg-[#0088b5] text-white px-6 py-2 rounded-md text-sm hover:bg-[#006d91] transition-colors disabled:opacity-50"
-              >
-                {submitting ? "Submitting..." : "Submit"}
-              </button>
-            </form>
-          </div>
-        </motion.div>
-      </div>
+      <Footer />
     </div>
   );
 }
