@@ -104,9 +104,11 @@ export function useAuth() {
   const login = async ({
     email,
     password,
+    redirectTo = "/",
   }: {
     email: string;
     password: string;
+    redirectTo?: string;
   }) => {
     setIsLoading(true);
     setError(null);
@@ -130,7 +132,7 @@ export function useAuth() {
       cookieService.setCookie('user', JSON.stringify(profile));
       setUser(profile);
 
-      router.push("/");
+      router.push(redirectTo);
     } catch (err: any) {
       console.error("❌ Login error:", err);
       setError(err.message || "Login failed");

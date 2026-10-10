@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useCartContext } from "@/app/contexts/cart-context";
 
 const CartDrawer = dynamic(() => import("./cart/CartDrawer"), { ssr: false });
 
@@ -13,6 +13,7 @@ type Props = {
   filters: string[];
   activeFilter: string;
   onFilterChange: (value: string) => void;
+  priceFilterLabel?: string;
   openCart: any;
   open: boolean;
   closeCart: any;
@@ -24,47 +25,12 @@ export default function ResultsFilterBar({
   filters,
   activeFilter,
   onFilterChange,
+  priceFilterLabel,
   openCart,
   open,
   closeCart,
 }: Props) {
-  const mockCartItems = [
-    {
-      id: "1",
-      title: "LED Billboard at Roundabout",
-      location: "Lekki Phase 1, Lagos",
-      price: 720000,
-      duration: 1,
-      availableInDays: 3,
-      image: "/images/hd-1.jpg",
-    },
-    {
-      id: "2",
-      title: "Unipole Billboard at Toll Plaza",
-      location: "Lekki-Epe Expressway, Lagos",
-      price: 300000,
-      duration: 1,
-      availableInDays: 7,
-      image:
-        "https://images.squarespace-cdn.com/content/v1/5dee6587e159e73b7ff7d7cc/2cc7e6ae-6fdc-4b57-aa8e-18523b839ff0/Example+of+an+Effective+Billboard+Design",
-    },
-    {
-      id: "3",
-      title: "Gantry Billboard at Expressway",
-      location: "Third Mainland Bridge, Lagos",
-      price: 1500000,
-      duration: 1,
-      availableInDays: 5,
-      image: "https://images.unsplash.com/photo-1509395176047-4a66953fd231",
-    },
-  ];
-  // ✅ turn mock data into state
-  const [items, setItems] = useState(
-    mockCartItems.map((item) => ({
-      ...item,
-      quantity: 1, // required
-    })),
-  );
+  const { totalItems } = useCartContext();
 
   return (
     <div className="flex items-end justify-between mb-6">
@@ -79,26 +45,34 @@ export default function ResultsFilterBar({
         </h2>
 
         {/* Filter Chips */}
-        <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+        <div className="flex flex-wrap items-center gap-2">
           {filters.map((filter, index) => {
             const isActive = filter === activeFilter;
 
             return (
               <button
-                key={index}
+                key={`${filter}-${index}`}
                 onClick={() => onFilterChange(filter)}
                 className={`px-4 py-2 text-sm whitespace-nowrap transition ${
                   isActive
                     ? "bg-[#e6f6fb] text-[#0088b5] font-medium"
                     : "bg-white text-gray-600 hover:bg-gray-50"
-                } ${
-                  index !== filters.length - 1 ? "border-r border-gray-300" : ""
-                }`}
+                } rounded-lg border border-gray-300`}
               >
                 {filter}
               </button>
             );
           })}
+          {priceFilterLabel && (
+            <button
+              type="button"
+              onClick={() => onFilterChange(priceFilterLabel)}
+              className="rounded-lg border border-[#0088b5] bg-[#e6f6fb] px-3 py-2 text-sm font-medium text-[#0088b5]"
+              aria-label={`Remove price filter ${priceFilterLabel}`}
+            >
+              {priceFilterLabel} ×
+            </button>
+          )}
         </div>
       </div>
 
@@ -106,17 +80,21 @@ export default function ResultsFilterBar({
       <div className="relative">
         <button
           onClick={openCart}
-          className="flex items-center gap-2 border border-gray-300 rounded-lg px-4 py-2 bg-white text-sm hover:bg-gray-50 transition whitespace-nowrap"
+          className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm transition hover:bg-gray-50"
         >
           <span>My Cart</span>
-          <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
+          <span className="relative inline-flex h-6 w-6 items-center justify-center">
+            <ShoppingBag className="h-5 w-5 text-gray-700" aria-hidden="true" />
+            {totalItems > 0 && (
+              <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#0177AB] px-1 text-[10px] font-semibold leading-none text-white">
+                {totalItems > 99 ? "99+" : totalItems}
+              </span>
+            )}
+          </span>
         </button>
 
         {/* Drawer */}
-        <CartDrawer
-          open={open}
-          onClose={closeCart}
-        />
+        <CartDrawer open={open} onClose={closeCart} />
       </div>
     </div>
   );

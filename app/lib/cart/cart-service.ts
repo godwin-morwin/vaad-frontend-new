@@ -12,6 +12,7 @@ export interface CartItem {
     city?: string;
     state?: string;
     rate: number;
+    price?: number;
     photos?: string[];
     images?: string[];
     height?: number;
@@ -20,6 +21,8 @@ export interface CartItem {
   };
   durationInMonths: number;
   startDate: string;
+  rate?: number;
+  price?: number;
   createdAt?: string;
   updatedAt?: string;
 }
