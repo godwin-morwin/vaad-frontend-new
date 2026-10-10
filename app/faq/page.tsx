@@ -1,213 +1,176 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import Navbar from "../components/layout/Navbar";
-import Footer from "../components/Home/Footer";
-import SimilarMedia from "../components/SimilarMedia";
-import { useContact } from "../hooks/useContact";
+import Navbar from "@/app/components/layout/Navbar";
+import Footer from "@/app/components/Home/Footer";
+import PageBanner from "@/app/components/PageBanner";
+import { MapPin, ArrowUpRight, Plus, Minus } from "lucide-react";
 
-interface FormData {
-  name: string;
-  email: string;
-  phoneNumber: string;
-  message: string;
-}
+const OFFICE_ADDRESS =
+  "1b, Awayewaserere Street, Off Lateef Jakande Road, Agidingbi, Ikeja, Lagos.";
+const MAP_DIRECTIONS_URL =
+  "https://www.google.com/maps/search/?api=1&query=" +
+  encodeURIComponent(OFFICE_ADDRESS);
 
-export default function FaqPage() {
-  return (
-    <>
-      <div className="min-h-screen bg-gray-50">
-        {/* Navbar - Fixed at top with high z-index */}
-        <div className="fixed top-0 left-0 right-0 z-50">
-          <Navbar />
-        </div>
-
-        {/* Hero Section */}
-        <section className="relative bg-linear-to-r from-[#0088b5] to-[#006d91] text-white pt-24 pb-16">
-          {/* Background GIF */}
-          <div className="absolute inset-0 z-0">
-            <Image
-              src="/video/vaad-bg.gif"
-              alt="VAAD Media Billboard"
-              fill
-              priority
-              unoptimized
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-black/50" />
-          </div>
-
-          {/* Hero Content */}
-          <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 pt-16">
-            <div className=" mx-auto text-center flex flex-col items-center">
-              <h1 className="text-3xl md:text-[68.36px] font-bold mb-4">
-                Frequently Asked Questions
-              </h1>
-              <p className="text-lg md:text-[15.19px] font-semibold text-white mb-8 max-w-100 text-center">
-                Have any question in mind or want to enquire? Please feel free
-                to contact us through the form or the following details.
-              </p>
-              <div className="flex items-center justify-center gap-2 text-sm text-white/80">
-                <Link href="/" className="hover:text-white transition-colors">
-                  Home
-                </Link>
-                <span>&gt;</span>
-                <span className="text-white">Contact</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Main Content */}
-        <section className="py-16 bg-[#f5f7fa]">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <FaqAccordion />
-          </div>
-        </section>
-      </div>
-
-      {/* MAP SECTION */}
-      <Map />
-      <Footer />
-    </>
-  );
-}
-
-import { motion, AnimatePresence } from "framer-motion";
-import Map from "../components/Map";
-
-const faqData = [
+const faqs = [
   {
-    question: "What services does VAAD Media offer?",
+    question: "What Services does VAAD Media offer?",
     answer:
-      "We provide end-to-end outdoor advertising solutions such as billboards, LED digital screens, bus wraps, lamp post ads, wall murals, and other high-impact OOH advertising formats.",
+      "We provide end-to-end outdoor advertising solutions such as billboards, LED digital screens, bus wraps, lamp post ads, wall drapes, and other high-impact OOH advertising formats.",
   },
   {
     question: "Can VAAD help me choose the best location for my campaign?",
     answer:
-      "Yes, we analyze traffic data, audience demographics, and campaign goals to recommend the most effective locations.",
+      "Yes. Our team helps you select high-visibility locations based on your target audience, budget, campaign goals, and traffic data across Lagos and other cities.",
   },
   {
     question: "How much does it cost to advertise with VAAD?",
     answer:
-      "Pricing depends on location, format, duration, and campaign scale. Contact us for a tailored quote.",
+      "Pricing depends on the media type, location, size, duration, and format. Share your brief with us and we’ll provide a tailored quote that fits your budget.",
   },
   {
-    question: "Can VAAD handle creative design and printing for my campaign?",
+    question: "How long does it take to launch my campaign after I make payment?",
     answer:
-      "Absolutely. We provide full creative support including design, printing, and production.",
-  },
-  {
-    question:
-      "How long does it take to launch my campaign after I make payment?",
-    answer:
-      "Typically within a few days, depending on production and placement requirements.",
+      "Most campaigns can go live within a few days after payment confirmation, artwork approval, and site availability. Timelines vary by format and location.",
   },
   {
     question: "Do you offer proof of display?",
     answer:
-      "Yes, we provide proof of display including images and reports for transparency.",
+      "Yes. We provide proof of display, including installation photos and monitoring updates, so you can verify that your campaign is running as booked.",
   },
   {
     question: "Can I run a short-term campaign?",
-    answer: "Yes, we offer flexible campaign durations to suit your needs.",
+    answer:
+      "Absolutely. We support short-term and long-term bookings depending on inventory availability. Tell us your preferred dates and we’ll advise on options.",
   },
   {
     question: "Do you operate only in Lagos?",
     answer:
-      "While Lagos is our primary market, we also execute campaigns across other cities.",
+      "Lagos is our primary market, but we can support campaigns in other major Nigerian cities through our network and partners. Reach out with your target cities.",
   },
   {
     question: "Can small businesses advertise with VAAD?",
-    answer: "Yes, we provide scalable solutions for businesses of all sizes.",
+    answer:
+      "Yes. We work with brands of all sizes — from startups and SMEs to large enterprises — and can recommend cost-effective formats that still deliver strong visibility.",
   },
   {
     question: "What is the first step to get started?",
     answer:
-      "Reach out via our contact form or call us, and our team will guide you through the process.",
+      "Simply contact us with your campaign goals, budget, and preferred locations, or request a quick quote. Our team will guide you through inventory, pricing, and booking.",
   },
 ];
 
-function FaqAccordion() {
-  const [activeIndex, setActiveIndex] = useState<number | null>(0);
+export default function FaqsPage() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
+  const toggle = (index: number) => {
+    setOpenIndex((prev) => (prev === index ? null : index));
+  };
 
   return (
-    <>
-      {/* SEO Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: faqData.map((item) => ({
-              "@type": "Question",
-              name: item.question,
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: item.answer,
-              },
-            })),
-          }),
-        }}
+    <div className="min-h-screen bg-[#F7F9FC]">
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Navbar transparent />
+      </div>
+
+      <PageBanner
+        showHome={false}
+        backgroundImage="/images/board.jpg"
+        title="Frequently Asked Questions"
+        subtitle="Got questions, we've got answers to your most common questions. Can't find what you're looking for? Reach out directly."
       />
 
-      <div className="space-y-4">
-        {faqData.map((item, index) => {
-          const isOpen = activeIndex === index;
+      <section className="px-4 sm:px-8 lg:px-16 py-10 lg:py-14">
+        <div className="max-w-5xl mx-auto space-y-10">
+          {/* ========== FAQ accordion ========== */}
+          <div className="space-y-3">
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
 
-          return (
-            <motion.div
-              key={index}
-              layout
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className={`rounded-md border ${
-                isOpen
-                  ? "bg-white border-gray-200 shadow-sm"
-                  : "border-transparent"
-              }`}
-            >
-              {/* Header */}
-              <button
-                onClick={() => setActiveIndex(isOpen ? null : index)}
-                className="w-full flex items-center justify-between px-5 py-4 text-left"
-              >
-                <span className="text-[15px] md:text-[18px] font-semibold text-[#0177AB]">
-                  {item.question}
-                </span>
-
-                <motion.span
-                  animate={{ rotate: isOpen ? 180 : 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="text-[#2563eb] text-xl font-semibold"
+              return (
+                <div
+                  key={index}
+                  className="bg-white rounded-2xl border border-[#E4E7EC] overflow-hidden transition-shadow hover:shadow-sm"
                 >
-                  {isOpen ? "−" : "+"}
-                </motion.span>
-              </button>
-
-              {/* Content */}
-              <AnimatePresence initial={false}>
-                {isOpen && (
-                  <motion.div
-                    key="content"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="overflow-hidden"
+                  <button
+                    type="button"
+                    onClick={() => toggle(index)}
+                    className="w-full flex items-center justify-between gap-4 px-5 sm:px-6 py-4 sm:py-5 text-left"
+                    aria-expanded={isOpen}
                   >
-                    <div className="px-5 pb-5 text-[14px] text-[#000B33] leading-relaxed">
-                      {item.answer}
+                    <span className="text-[15px] font-medium text-[#101928] pr-2">
+                      {faq.question}
+                    </span>
+                    <span
+                      className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition ${
+                        isOpen
+                          ? "bg-[#E8F4FA] text-[#0177AB]"
+                          : "bg-[#F2F4F7] text-[#667185]"
+                      }`}
+                    >
+                      {isOpen ? <Minus size={16} /> : <Plus size={16} />}
+                    </span>
+                  </button>
+
+                  <div
+                    className={`grid transition-all duration-300 ease-out ${
+                      isOpen
+                        ? "grid-rows-[1fr] opacity-100"
+                        : "grid-rows-[0fr] opacity-0"
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <p className="px-5 sm:px-6 pb-5 text-sm text-[#667185] leading-relaxed">
+                        {faq.answer}
+                      </p>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          );
-        })}
-      </div>
-    </>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ========== Map section ========== */}
+          <div className="relative w-full h-[300px] sm:h-[360px] lg:h-[400px] rounded-2xl overflow-hidden border border-[#E4E7EC] bg-[#E8ECF0]">
+            <iframe
+              title="VAAD+ Office Location"
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                OFFICE_ADDRESS,
+              )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+              className="absolute inset-0 w-full h-full border-0 grayscale-[30%]"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+            />
+
+            {/* Floating card */}
+            <div className="absolute left-4 sm:left-6 bottom-4 sm:bottom-6 z-10 w-[min(100%,280px)] bg-white rounded-2xl shadow-lg border border-[#E4E7EC] p-5">
+              <div className="w-9 h-9 rounded-full bg-[#E8F4FA] flex items-center justify-center mb-3">
+                <MapPin size={18} className="text-[#0177AB]" />
+              </div>
+
+              <h3 className="text-base font-semibold text-[#101928]">
+                Find us here
+              </h3>
+              <p className="mt-1.5 text-sm text-[#667185] leading-relaxed">
+                {OFFICE_ADDRESS}
+              </p>
+
+              <a
+                href={MAP_DIRECTIONS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 mt-4 text-sm font-semibold text-[#0177AB] hover:underline"
+              >
+                Get Directions
+                <ArrowUpRight size={15} />
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
   );
 }

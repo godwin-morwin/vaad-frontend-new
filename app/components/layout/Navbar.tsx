@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import Link from "next/link";
@@ -38,7 +39,7 @@ const NAV_LINKS: NavLink[] = [
   { name: "Outdoor Advertising", href: "/outdoor", icon: <Home size={18} /> },
   { name: "Services", href: "/services", icon: <TrendingUp size={18} /> },
   { name: "About", href: "/about", icon: <Printer size={18} /> },
-  { name: "FAQs", href: "/faqs", icon: <Monitor size={18} /> },
+  { name: "FAQs", href: "/faq", icon: <Monitor size={18} /> },
   { name: "Partner", href: "/partner", icon: <Radio size={18} /> },
   { name: "Contact", href: "/contact", icon: <Radio size={18} /> },
   { name: "Blog", href: "/blog", icon: <Radio size={18} /> },
