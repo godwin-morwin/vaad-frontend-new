@@ -35,10 +35,10 @@ interface NavLink {
 }
 
 const NAV_LINKS: NavLink[] = [
-  { name: "Outdoor Advertising", href: "/", icon: <Home size={18} /> },
+  { name: "Outdoor Advertising", href: "/outdoor", icon: <Home size={18} /> },
   { name: "Services", href: "/services", icon: <TrendingUp size={18} /> },
   { name: "About", href: "/about", icon: <Printer size={18} /> },
-  { name: "FAQs", href: "/fAQs", icon: <Monitor size={18} /> },
+  { name: "FAQs", href: "/faqs", icon: <Monitor size={18} /> },
   { name: "Partner", href: "/partner", icon: <Radio size={18} /> },
   { name: "Contact", href: "/contact", icon: <Radio size={18} /> },
   { name: "Blog", href: "/blog", icon: <Radio size={18} /> },
@@ -49,6 +49,7 @@ const SERVICES_LINKS = [
   { name: "Radio", href: "/services/radio" },
   { name: "Print", href: "/services/print" },
   { name: "Digital Marketing", href: "/services/digital-marketing" },
+  { name: "Transit Advertising", href: "/transit" },
 ];
 
 const Avatar = ({
@@ -111,7 +112,6 @@ export default function Navbar({ transparent = false }: NavbarProps) {
   const { user, isAuthenticated, logout } = useAuthContext();
   const { showToast } = useToast();
 
-  // AuthModal
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
 
@@ -129,8 +129,41 @@ export default function Navbar({ transparent = false }: NavbarProps) {
     : "hover:text-[#0177AB]";
   const activeColor = isTransparent ? "text-white" : "text-[#0177AB]";
 
-  const isActiveLink = (href: string) => pathname === href;
-  const isServicesActive = pathname.startsWith("/services");
+  /**
+   * Active link rules:
+   * - Home "/" → nothing active
+   * - /outdoor → Outdoor Advertising
+   * - /blog and /blog/* → Blog
+   * - /services/* and /transit → Services
+   * - exact match for other pages
+   */
+  const isActiveLink = (href: string) => {
+    if (pathname === "/") return false;
+
+    if (href === "/outdoor") {
+      return pathname === "/outdoor" || pathname.startsWith("/outdoor/");
+    }
+
+    if (href === "/blog") {
+      return pathname === "/blog" || pathname.startsWith("/blog/");
+    }
+
+    if (href === "/services") {
+      return (
+        pathname === "/services" ||
+        pathname.startsWith("/services/") ||
+        pathname === "/transit" ||
+        pathname.startsWith("/transit/")
+      );
+    }
+
+    return pathname === href;
+  };
+
+  const isServicesActive =
+    pathname.startsWith("/services") ||
+    pathname === "/transit" ||
+    pathname.startsWith("/transit/");
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
   const toggleProfileMenu = () => setIsProfileMenuOpen(!isProfileMenuOpen);
@@ -190,9 +223,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
     };
   }, [isMobileMenuOpen]);
 
-  // Close services dropdown when route changes
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsServicesOpen(false);
     setIsMobileServicesOpen(false);
   }, [pathname]);
@@ -211,7 +242,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
         `}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Logo */}
+          {/* Logo → always home */}
           <Link href="/" className="flex items-center gap-2">
             <Image
               src={isTransparent ? "/vaad+white.svg" : "/Vaad+.svg"}
@@ -226,7 +257,6 @@ export default function Navbar({ transparent = false }: NavbarProps) {
           {/* Desktop Navigation */}
           <div className="hidden md:flex gap-9 text-[15px] font-medium">
             {NAV_LINKS.map((link, index) => {
-              // Services Dropdown
               if (link.name === "Services") {
                 return (
                   <div
@@ -267,7 +297,8 @@ export default function Navbar({ transparent = false }: NavbarProps) {
                               href={service.href}
                               onClick={() => setIsServicesOpen(false)}
                               className={`block px-5 py-3 text-[14px] transition-colors ${
-                                isActiveLink(service.href)
+                                pathname === service.href ||
+                                pathname.startsWith(service.href + "/")
                                   ? "text-[#0177AB] bg-[#0177AB]/5 font-medium"
                                   : "text-gray-700 hover:bg-gray-50 hover:text-[#0177AB]"
                               }`}
@@ -282,7 +313,6 @@ export default function Navbar({ transparent = false }: NavbarProps) {
                 );
               }
 
-              // Regular links
               return (
                 <motion.div
                   key={link.href}
@@ -525,7 +555,6 @@ export default function Navbar({ transparent = false }: NavbarProps) {
 
           <div className="px-5 py-6 space-y-1">
             {NAV_LINKS.map((link) => {
-              // Services expandable on mobile
               if (link.name === "Services") {
                 return (
                   <div key={link.href}>
@@ -571,7 +600,8 @@ export default function Navbar({ transparent = false }: NavbarProps) {
                                 href={service.href}
                                 onClick={toggleMobileMenu}
                                 className={`block px-4 py-3 rounded-xl text-[14px] transition-colors ${
-                                  isActiveLink(service.href)
+                                  pathname === service.href ||
+                                  pathname.startsWith(service.href + "/")
                                     ? "text-[#0088b5] bg-[#0088b5]/10 font-medium"
                                     : "text-gray-600 hover:bg-gray-50 hover:text-[#0088b5]"
                                 }`}
@@ -587,7 +617,6 @@ export default function Navbar({ transparent = false }: NavbarProps) {
                 );
               }
 
-              // Regular mobile links
               return (
                 <Link
                   key={link.href}
@@ -681,7 +710,6 @@ export default function Navbar({ transparent = false }: NavbarProps) {
         </div>
       </div>
 
-      {/* Cart drawer works on mobile + desktop */}
       <CartDrawer open={isCartOpen} onClose={() => setIsCartOpen(false)} />
 
       <AuthModal
