@@ -28,6 +28,7 @@ interface AssetsData {
 interface SearchBoxProps {
   filters: Filters;
   handleFilterChange: (key: keyof Filters, value: string) => void;
+  onMediaTypeChange?: (mediaType: string, productType: string) => void;
   handleSearch: () => void;
   isLoading: boolean;
   assets: AssetsData;
@@ -38,6 +39,7 @@ interface SearchBoxProps {
 export default function SearchBox({
   filters,
   handleFilterChange,
+  onMediaTypeChange,
   handleSearch,
   isLoading,
   assets,
@@ -59,13 +61,14 @@ export default function SearchBox({
 
   // Handle media type change
   const handleMediaTypeChange = (value: string) => {
-    handleFilterChange("mediaType", value);
-    // Set product type to first available for this media type
     const productTypes = assets?.mediaAndProductsTypes?.[value] || [];
-    if (productTypes.length > 0) {
-      handleFilterChange("productType", productTypes[0]);
+    const productType = productTypes[0] || "";
+
+    if (onMediaTypeChange) {
+      onMediaTypeChange(value, productType);
     } else {
-      handleFilterChange("productType", "");
+      handleFilterChange("mediaType", value);
+      handleFilterChange("productType", productType);
     }
   };
 
@@ -152,7 +155,8 @@ export default function SearchBox({
       label: option,
       value: option,
     }));
-    const selectedOption = options.find((option) => option.value === item.value) || null;
+    const selectedOption =
+      options.find((option) => option.value === item.value) || null;
 
     return (
       <Select<SelectOption, false>
@@ -174,7 +178,7 @@ export default function SearchBox({
   return (
     <>
       {/* ---------------- DESKTOP ---------------- */}
-      <div className="hidden md:block mt-12 bg-white rounded-lg shadow-lg p-6 w-full">
+      <div className="hidden md:block bg-white rounded-lg shadow-lg p-6 w-full border border-[#DFDFE1]">
         <div className="grid grid-cols-4 gap-4">
           {desktopFields.map((item) => (
             <div key={item.key}>

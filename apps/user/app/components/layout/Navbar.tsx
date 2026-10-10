@@ -214,9 +214,9 @@ export default function Navbar({ transparent = false }: NavbarProps) {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src={isTransparent ? "/vaad-white-full.svg" : "/Vaad+.svg"}
+              src={isTransparent ? "/vaad+white.svg" : "/Vaad+.svg"}
               alt="VAAD Media"
-              width={150}
+              width={130}
               height={34}
               className="transition-opacity duration-300"
               priority
@@ -494,7 +494,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
           <div className="bg-gradient-to-br from-[#0088b5] to-[#006d91] pt-10 pb-8 px-6 sticky top-0 z-10">
             <div className="flex items-center justify-between mb-8">
               <Image
-                src="/vaad-white-full.svg"
+                src="/vaad+white.svg"
                 alt="VAAD Media"
                 width={120}
                 height={38}

@@ -9,4 +9,6 @@ export type Billboard = {
   impressions?: string;
   description?: string;
   availableInDays?: number; // for "Available in 12 days"
+  availabilityLabel?: string;
+  availabilityStatus?: "available" | "booked" | "unavailable";
 };

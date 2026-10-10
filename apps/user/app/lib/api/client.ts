@@ -12,6 +12,10 @@ type FailedRequest = {
   reject: (error: unknown) => void;
 };
 
+type ApiRequestConfig = AxiosRequestConfig & {
+  skipAuthRedirect?: boolean;
+};
+
 export class ApiClient {
   private static instance: ApiClient;
   private api: AxiosInstance;
@@ -74,13 +78,17 @@ export class ApiClient {
     this.api.interceptors.response.use(
       (response) => response,
       async (error: AxiosError) => {
-        const originalRequest = error.config as AxiosRequestConfig & {
+        const originalRequest = error.config as ApiRequestConfig & {
           _retry?: boolean;
         };
 
         const status = error.response?.status;
 
         if (status === 401 && !originalRequest?._retry) {
+          if (originalRequest?.skipAuthRedirect) {
+            return Promise.reject(this.normalizeError(error));
+          }
+
           if (this.isRefreshing) {
             return new Promise((resolve, reject) => {
               this.failedQueue.push({
@@ -169,7 +177,7 @@ export class ApiClient {
   // =============================
   // 🌐 HTTP METHODS
   // =============================
-  async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  async get<T>(url: string, config?: ApiRequestConfig): Promise<T> {
     const res = await this.api.get<T>(url, config);
     return res.data;
   }
@@ -177,7 +185,7 @@ export class ApiClient {
   async post<T>(
     url: string,
     data?: unknown,
-    config?: AxiosRequestConfig
+    config?: ApiRequestConfig
   ): Promise<T> {
     const res = await this.api.post<T>(url, data, config);
     return res.data;

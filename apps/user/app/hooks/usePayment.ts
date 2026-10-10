@@ -10,14 +10,23 @@ import {
   paymentService,
   InitializePaymentRequest,
   InitializePaymentResponse,
+  isFailedPaymentStatus,
+  isSuccessfulPaymentStatus,
 } from "@/app/lib/payment/payment-service";
+import {
+  BookingDetails,
+  saveBookingDetails,
+} from "@/app/lib/payment/booking-details";
 
 interface UsePaymentReturn {
   isPaying: boolean;
   error: string | null;
   lastOrder: InitializePaymentResponse | null;
   initializePayment: (
-    data: InitializePaymentRequest
+    data: InitializePaymentRequest,
+    details?: Omit<BookingDetails, "orderId" | "reference" | "amount"> & {
+      amount?: number;
+    },
   ) => Promise<InitializePaymentResponse | null>;
   clearError: () => void;
 }
@@ -36,7 +45,12 @@ export function usePayment(): UsePaymentReturn {
   const clearError = useCallback(() => setError(null), []);
 
   const initializePayment = useCallback(
-    async (data: InitializePaymentRequest) => {
+    async (
+      data: InitializePaymentRequest,
+      details?: Omit<BookingDetails, "orderId" | "reference" | "amount"> & {
+        amount?: number;
+      },
+    ) => {
       if (!isAuthenticated) {
         showToast?.({
           type: "warning",
@@ -61,13 +75,26 @@ export function usePayment(): UsePaymentReturn {
       try {
         const order = await paymentService.initializePayment(data);
         setLastOrder(order);
+        if (details) saveBookingDetails(order, details);
 
-        // Clear cart after successful payment init
-        try {
-          await clearCart();
-        } catch (clearErr) {
-          console.error("Failed to clear cart after payment:", clearErr);
-          // Don't fail payment UX if clear fails — order already created
+        if (isSuccessfulPaymentStatus(order.status)) {
+          try {
+            await clearCart();
+          } catch (clearError) {
+            console.error("Failed to clear cart after confirmed payment:", clearError);
+          }
+          router.replace(
+            `/booking-confirmed?orderId=${encodeURIComponent(order._id)}&reference=${encodeURIComponent(order.reference)}`,
+          );
+          return order;
+        }
+
+        if (isFailedPaymentStatus(order.status)) {
+          const message = `Payment initialization failed (${order.status}).`;
+          setError(message);
+          showToast?.({ type: "error", message, duration: 4000 });
+          router.replace(`/payment/error?message=${encodeURIComponent(message)}`);
+          return null;
         }
 
         const payUrl = order.authorizationUrl || order.paymentUrl;
@@ -76,19 +103,14 @@ export function usePayment(): UsePaymentReturn {
           return order;
         }
 
-        router.push(
-          `/payment/success?reference=${encodeURIComponent(
-            order.reference
-          )}&orderId=${encodeURIComponent(order._id)}&amount=${order.amount}`
-        );
+        const message = order.status
+          ? `Payment was not started. The payment service returned "${order.status}" without a checkout link.`
+          : "Payment was not started. The payment service did not return a payment status or checkout link.";
+        setError(message);
+        showToast?.({ type: "error", message, duration: 4000 });
+        router.replace(`/payment/error?message=${encodeURIComponent(message)}`);
 
-        showToast?.({
-          type: "success",
-          message: "Order initialized successfully",
-          duration: 3000,
-        });
-
-        return order;
+        return null;
       } catch (err: any) {
         const raw =
           err?.message ||

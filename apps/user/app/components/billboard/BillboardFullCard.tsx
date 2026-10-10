@@ -16,6 +16,8 @@ export default function BillboardFullCard({ billboard }: Props) {
   const { addToCart, isItemInCart } = useCartContext();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const inCart = isItemInCart(billboard._id);
+  const isAvailableLater =
+    billboard.availabilityLabel?.startsWith("Available in ");
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
@@ -55,9 +57,28 @@ export default function BillboardFullCard({ billboard }: Props) {
         <div className="absolute top-3 right-3">
           <div className="relative">
             {/* Speech bubble */}
-            <div className="bg-[#f4f9fd] px-3 py-1.5 rounded-md">
-              <span className="text-[#0177AB] text-sm font-medium whitespace-nowrap">
-                Available in {billboard.availableInDays || 0} days
+            <div
+              className={`rounded-md px-3 py-1.5 ${
+                isAvailableLater
+                  ? "bg-[#D93A4A]"
+                  : billboard.availabilityLabel === "Available"
+                    ? "bg-[#E7F8F2]"
+                    : "bg-gray-100"
+              }`}
+            >
+              <span
+                className={`whitespace-nowrap text-sm font-medium ${
+                  isAvailableLater
+                    ? "text-white"
+                    : billboard.availabilityLabel === "Available"
+                      ? "text-[#0B835C]"
+                      : "text-gray-700"
+                }`}
+              >
+                {billboard.availabilityLabel ||
+                  (billboard.availableInDays
+                    ? `Available in ${billboard.availableInDays} day${billboard.availableInDays === 1 ? "" : "s"}`
+                    : "Available")}
               </span>
             </div>
             {/* Arrow pointer - left side of bubble pointing left toward content */}
@@ -66,7 +87,13 @@ export default function BillboardFullCard({ billboard }: Props) {
               style={{
                 borderTop: "6px solid transparent",
                 borderBottom: "6px solid transparent",
-                borderRight: "6px solid #f4f9fd",
+                borderRight: `6px solid ${
+                  isAvailableLater
+                    ? "#D93A4A"
+                    : billboard.availabilityLabel === "Available"
+                      ? "#E7F8F2"
+                      : "#f3f4f6"
+                }`,
               }}
             />
           </div>
@@ -94,31 +121,25 @@ export default function BillboardFullCard({ billboard }: Props) {
         </div>
 
         {/* Buttons */}
-        <div className="flex items-center gap-3 mt-4">
-          <button
-            type="button"
-            onClick={() => router.push(`/billboard/${billboard._id}`)}
-            className="px-4 py-2 text-sm border border-red-300 text-red-500 rounded-md hover:bg-red-50 transition"
-          >
-            View Details
-          </button>
-
+        <div className="mt-4 flex items-center gap-3">
           <button
             type="button"
             onClick={handleAddToCart}
             disabled={inCart || isAddingToCart}
-            className="px-4 py-2 text-sm bg-[#0ea5e9] text-white rounded-md hover:bg-[#0284c7] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="flex items-center gap-2 rounded-md bg-[#0177AB] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#006d91] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isAddingToCart ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Adding...
-              </>
-            ) : inCart ? (
-              "In Cart"
-            ) : (
-              "Add to Cart"
+            {isAddingToCart && (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
             )}
+            Add to Cart
+          </button>
+
+          <button
+            type="button"
+            onClick={() => router.push(`/billboard/${billboard._id}`)}
+            className="rounded-md border border-[#0177AB] bg-transparent px-4 py-2 text-sm font-medium text-[#0177AB] transition hover:bg-[#0177AB]/5"
+          >
+            View Details
           </button>
         </div>
       </div>

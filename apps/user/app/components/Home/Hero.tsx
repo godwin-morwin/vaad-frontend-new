@@ -159,7 +159,8 @@ export default function Hero() {
             </div>
 
             {/* Search Box */}
-            <SearchBox
+           <div className="mt-12">
+             <SearchBox
               filters={filters}
               handleFilterChange={handleFilterChange}
               handleSearch={handleSearch}
@@ -168,6 +169,7 @@ export default function Hero() {
               assetsLoading={assetsLoading}
               locations={locations}
             />
+           </div>
           </div>
         </div>
       </div>
