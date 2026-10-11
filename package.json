@@ -1,35 +1,50 @@
 {
-  "name": "vaad-web",
+  "name": "user",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types",
-    "preinstall": "npx only-allow pnpm",
-    "ui:add": "pnpm dlx shadcn@latest add -c packages/ui"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "preinstall": "npx only-allow pnpm"
   },
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
-  "devDependencies": {
-    "prettier": "^3.7.4",
-    "turbo": "^2.8.16",
-    "typescript": "5.9.2",
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*"
-  },
-  "packageManager": "pnpm@8.15.6",
   "engines": {
-    "node": "24.x"
+    "node": "24.20.0"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.90.21",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@hookform/resolvers": "^5.2.2",
+    "@mui/icons-material": "^7.3.9",
+    "@mui/material": "^7.3.9",
+    "@openai/codex": "^0.148.0",
     "axios": "^1.13.6",
+    "cookies-next": "^6.1.1",
+    "framer-motion": "^12.38.0",
+    "gray-matter": "^4.0.3",
+    "highlight.js": "^11.11.1",
+    "lucide-react": "^0.577.0",
+    "mapbox-gl": "^3.20.0",
+    "next": "16.2.4",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-hook-form": "^7.71.2",
+    "react-markdown": "^10.1.0",
+    "react-select": "^5.10.2",
+    "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
     "only-allow": "^1.2.2",
-    "zustand": "^5.0.11",
-    "@repo/ui": "workspace:*"
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
