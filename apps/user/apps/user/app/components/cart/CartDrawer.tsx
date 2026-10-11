@@ -2,10 +2,10 @@
 
 import { Drawer, IconButton } from "@mui/material";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Trash2, Minus, Plus, Calendar, X, ShoppingCart } from "lucide-react";
-import { cartService } from "@/app/lib/cart/cart-service";
+import { CartItem, cartService } from "@/app/lib/cart/cart-service";
 import { useCartContext } from "@/app/contexts/cart-context";
-import { usePayment } from "@/app/hooks/usePayment";
 
 type Props = {
   open: boolean;
@@ -13,29 +13,13 @@ type Props = {
   anchor?: "left" | "right";
 };
 
-const toYYYYMMDD = (value?: string) => {
-  if (!value) return new Date().toISOString().slice(0, 10);
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return new Date().toISOString().slice(0, 10);
-  return d.toISOString().slice(0, 10);
-};
-
 /** Resolve monthly rate from common cart payload shapes */
-const getItemRate = (item: any): number => {
+const getItemRate = (item: CartItem): number => {
   const candidates = [
     item?.billboard?.rate,
     item?.billboard?.price,
     item?.rate,
     item?.price,
-    item?.amount,
-    item?.unitPrice,
-    item?.monthlyRate,
-    item?.cost,
-    item?.billboardId?.rate,
-    item?.billboardId?.price,
-    item?.media?.rate,
-    item?.media?.price,
   ];
 
   for (const value of candidates) {
@@ -45,12 +29,13 @@ const getItemRate = (item: any): number => {
   return 0;
 };
 
-const getItemTotal = (item: any): number => {
+const getItemTotal = (item: CartItem): number => {
   const months = Number(item?.durationInMonths) || 1;
   return getItemRate(item) * months;
 };
 
 export default function CartDrawer({ open, onClose, anchor = "right" }: Props) {
+  const router = useRouter();
   const {
     cartItems,
     isLoading,
@@ -61,15 +46,12 @@ export default function CartDrawer({ open, onClose, anchor = "right" }: Props) {
     isCartItemPending,
   } = useCartContext();
 
-  const { initializePayment, isPaying, error: paymentError, clearError } =
-    usePayment();
-
   const hasItems = cartItems.length > 0;
-  const isPayDisabled = isPaying || !hasItems;
+  const isPayDisabled = isLoading || !hasItems;
 
   const computedSubtotal = cartItems.reduce(
     (sum, item) => sum + getItemTotal(item),
-    0
+    0,
   );
 
   const handleIncrease = async (itemId: string, currentDuration: number) => {
@@ -89,18 +71,8 @@ export default function CartDrawer({ open, onClose, anchor = "right" }: Props) {
 
   const handleProceedToPay = async () => {
     if (isPayDisabled) return;
-    clearError?.();
-
-    const orderItems = cartItems
-      .map((item) => ({
-        durationInMonths: item.durationInMonths,
-        billboardId: item.billboardId || item.billboard?._id || "",
-        startDate: toYYYYMMDD(item.startDate),
-      }))
-      .filter((item) => Boolean(item.billboardId));
-
-    if (!orderItems.length) return;
-    await initializePayment({ orderItems });
+    onClose();
+    router.push("/booking-summary");
   };
 
   return (
@@ -150,15 +122,6 @@ export default function CartDrawer({ open, onClose, anchor = "right" }: Props) {
             </div>
           )}
 
-          {paymentError && (
-            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
-              <p className="text-sm font-medium text-red-800">Payment error</p>
-              <p className="text-sm text-red-700 mt-1 break-words">
-                {paymentError}
-              </p>
-            </div>
-          )}
-
           {isLoading && (
             <div className="flex items-center justify-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0177AB]" />
@@ -198,12 +161,8 @@ export default function CartDrawer({ open, onClose, anchor = "right" }: Props) {
                 const isItemPending = isCartItemPending(item._id);
                 const rate = getItemRate(item);
                 const lineTotal = getItemTotal(item);
-                const title =
-                  item.billboard?.mediaType ||
-                  "Billboard";
-                const address =
-                  item.billboard?.locationAddress ||
-                  "";
+                const title = item.billboard?.mediaType || "Billboard";
+                const address = item.billboard?.locationAddress || "";
 
                 return (
                   <div
@@ -337,22 +296,15 @@ export default function CartDrawer({ open, onClose, anchor = "right" }: Props) {
                     : "bg-[#0177AB] text-white hover:bg-[#0284c7] cursor-pointer"
                 }`}
               >
-                {isPaying ? (
-                  <span className="inline-flex items-center justify-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Processing...
-                  </span>
-                ) : (
-                  "Proceed to Pay"
-                )}
+                Proceed to Pay
               </button>
 
               <button
                 type="button"
                 onClick={onClose}
-                disabled={isPaying}
+                disabled={isLoading}
                 className={`w-full sm:flex-1 border py-3.5 sm:py-4 rounded-md font-semibold text-sm sm:text-base transition ${
-                  isPaying
+                  isLoading
                     ? "border-gray-300 text-gray-400 cursor-not-allowed"
                     : "border-[#0177AB] text-[#0177AB] hover:bg-gray-100"
                 }`}

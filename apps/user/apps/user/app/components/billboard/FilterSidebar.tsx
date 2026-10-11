@@ -1,192 +1,171 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// app/components/billboard/FilterSidebar.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import FilterSection from "./FilterSection";
 import Checkbox from "./Checkbox";
-import { useAssets } from "@/app/hooks/useAssets";
 
-interface FiltersType {
+export interface ListingFilters {
   mediaType: string;
   productType: string;
   location: string;
-  serviceType?: string;
   minRate?: number;
   maxRate?: number;
+  landmark: string;
+  availability: "" | "available" | "booked" | "unavailable";
+  targetAudience: string;
 }
 
 interface FilterSidebarProps {
-  onFilterChange: any;
-  filters: FiltersType;
-  assets?: any;
+  onFilterChange: <K extends keyof ListingFilters>(
+    key: K,
+    value: ListingFilters[K],
+  ) => void;
+  onPriceRangeChange: (range: { minRate?: number; maxRate?: number }) => void;
+  filters: ListingFilters;
+  assets: {
+    landmarks?: string[];
+    statesAndCites?: Record<string, string[]>;
+    targetAudience?: string[];
+  };
 }
 
-// Generate consistent counts for landmarks
-const generateConsistentCount = (landmark: string): number => {
-  let hash = 0;
-  for (let i = 0; i < landmark.length; i++) {
-    hash = ((hash << 5) - hash) + landmark.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash % 290) + 10;
-};
+const priceRanges = [
+  { label: "Under ₦200,000", min: 0, max: 200000 },
+  { label: "₦200,000 - ₦500,000", min: 200000, max: 500000 },
+  { label: "₦500,000 - ₦1,000,000", min: 500000, max: 1000000 },
+  { label: "₦1,000,000 - ₦2,000,000", min: 1000000, max: 2000000 },
+  { label: "₦2,000,000 - ₦5,000,000", min: 2000000, max: 5000000 },
+  { label: "₦5,000,000 and above", min: 5000000, max: undefined },
+];
 
-const FilterSidebar = ({ onFilterChange, filters, assets }: FilterSidebarProps) => {
-  const { assets: assetsData } = useAssets();
-  const [billboardTypeSearch, setBillboardTypeSearch] = useState("");
+export default function FilterSidebar({
+  onFilterChange,
+  onPriceRangeChange,
+  filters,
+  assets,
+}: FilterSidebarProps) {
   const [landmarkSearch, setLandmarkSearch] = useState("");
-  const [selectedPriceRange, setSelectedPriceRange] = useState<string>("");
-  const [selectedLandmarks, setSelectedLandmarks] = useState<string[]>([]);
+  const landmarks = useMemo(() => assets.landmarks ?? [], [assets.landmarks]);
+  const markets = useMemo(
+    () => Object.keys(assets.statesAndCites ?? {}),
+    [assets.statesAndCites],
+  );
+  const audiences = useMemo(
+    () => assets.targetAudience ?? [],
+    [assets.targetAudience],
+  );
 
-  // Get media types from assets
-  const mediaTypes = useMemo(() => {
-    if (assets?.mediaAndProductsTypes) {
-      return Object.keys(assets.mediaAndProductsTypes);
-    }
-    if (assetsData?.mediaAndProductsTypes) {
-      return Object.keys(assetsData.mediaAndProductsTypes);
-    }
-    return [];
-  }, [assets, assetsData]);
+  const filteredLandmarks = useMemo(
+    () =>
+      landmarks.filter((landmark) =>
+        landmark.toLowerCase().includes(landmarkSearch.toLowerCase()),
+      ),
+    [landmarks, landmarkSearch],
+  );
 
-  // Get landmarks from assets
-  const landmarks = useMemo(() => {
-    if (assets?.landmarks) return assets.landmarks;
-    if (assetsData?.landmarks) return assetsData.landmarks;
-    return [];
-  }, [assets, assetsData]);
+  const selectedPriceRange = priceRanges.find(
+    (range) => range.min === filters.minRate && range.max === filters.maxRate,
+  );
 
-  // Generate consistent counts for landmarks
-  const landmarkCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    landmarks.forEach((landmark: string) => {
-      counts[landmark] = generateConsistentCount(landmark);
-    });
-    return counts;
-  }, [landmarks]);
-
-  // Filter media types based on search
-  const filteredMediaTypes = useMemo(() => {
-    if (!billboardTypeSearch) return mediaTypes;
-    return mediaTypes.filter(type => 
-      type.toLowerCase().includes(billboardTypeSearch.toLowerCase())
+  const selectPriceRange = (range: (typeof priceRanges)[number]) => {
+    const isSelected = selectedPriceRange?.label === range.label;
+    onPriceRangeChange(
+      isSelected ? {} : { minRate: range.min, maxRate: range.max },
     );
-  }, [mediaTypes, billboardTypeSearch]);
-
-  // Filter landmarks based on search
-  const filteredLandmarks = useMemo(() => {
-    if (!landmarkSearch) return landmarks;
-    return landmarks.filter((landmark: string) => 
-      landmark.toLowerCase().includes(landmarkSearch.toLowerCase())
-    );
-  }, [landmarks, landmarkSearch]);
-
-  // Price ranges
-  const priceRanges = [
-    { label: "₦0 - ₦200,000", min: 0, max: 200000 },
-    { label: "₦200,000 - ₦500,000", min: 200000, max: 500000 },
-    { label: "₦500,000 - ₦1,000,000", min: 500000, max: 1000000 },
-    { label: "₦1,000,000 - ₦2,000,000", min: 1000000, max: 2000000 },
-    { label: "₦2,000,000 - ₦5,000,000", min: 2000000, max: 5000000 },
-    { label: "₦5,000,000+", min: 5000000, max: undefined },
-  ];
-
-  // Handle media type selection
-  const handleMediaTypeChange = (mediaType: string, checked: boolean) => {
-    if (checked) {
-      onFilterChange("mediaType", mediaType);
-    } else if (filters.mediaType === mediaType) {
-      onFilterChange("mediaType", "");
-    }
-  };
-
-  // Handle price range selection
-  const handlePriceRangeChange = (range: typeof priceRanges[0], checked: boolean) => {
-    if (checked) {
-      setSelectedPriceRange(range.label);
-      onFilterChange("minRate", range.min);
-      onFilterChange("maxRate", range.max);
-    } else {
-      setSelectedPriceRange("");
-      onFilterChange("minRate", undefined);
-      onFilterChange("maxRate", undefined);
-    }
-  };
-
-  // Handle landmark selection
-  const handleLandmarkChange = (landmark: string, checked: boolean) => {
-    if (checked) {
-      setSelectedLandmarks([...selectedLandmarks, landmark]);
-    } else {
-      setSelectedLandmarks(selectedLandmarks.filter(l => l !== landmark));
-    }
   };
 
   return (
-    <aside className="space-y-6">
-      {/* Billboard Type */}
-      <FilterSection title="Billboard Type" searchable>
-        <input
-          type="text"
-          placeholder="e.g. Static Billboard"
-          value={billboardTypeSearch}
-          onChange={(e) => setBillboardTypeSearch(e.target.value)}
-          className="w-full px-3 py-2 text-sm bg-white border border-[#E0E0E0] rounded-sm outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <div className="space-y-2 mt-3 max-h-60 overflow-y-auto">
-          {filteredMediaTypes.map((type) => (
-            <Checkbox
-              key={type}
-              label={type}
-              checked={filters.mediaType === type}
-              onChange={(checked) => handleMediaTypeChange(type, checked)}
-            />
-          ))}
-          {filteredMediaTypes.length === 0 && (
-            <p className="text-sm text-gray-500">No billboard types found</p>
-          )}
-        </div>
-      </FilterSection>
-
-      {/* Pricing */}
+    <aside className="space-y-4">
       <FilterSection title="Pricing">
         {priceRanges.map((range) => (
           <Checkbox
             key={range.label}
             label={range.label}
-            checked={selectedPriceRange === range.label}
-            onChange={(checked) => handlePriceRangeChange(range, checked)}
+            checked={selectedPriceRange?.label === range.label}
+            onChange={() => selectPriceRange(range)}
           />
         ))}
       </FilterSection>
 
-      {/* Landmark */}
       <FilterSection title="Landmark" searchable>
         <input
-          type="text"
-          placeholder="e.g School"
+          type="search"
+          placeholder="Search landmarks"
           value={landmarkSearch}
-          onChange={(e) => setLandmarkSearch(e.target.value)}
-          className="w-full px-3 py-2 text-sm bg-white border border-[#E0E0E0] rounded-sm outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+          onChange={(event) => setLandmarkSearch(event.target.value)}
+          className="mb-2 w-full rounded-sm border border-[#E0E0E0] bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <div className="space-y-2 max-h-60 overflow-y-auto">
-          {filteredLandmarks.map((landmark: string) => (
+        <div className="max-h-60 space-y-2 overflow-y-auto">
+          {filteredLandmarks.map((landmark) => (
             <Checkbox
               key={landmark}
               label={landmark}
-              count={landmarkCounts[landmark]}
-              checked={selectedLandmarks.includes(landmark)}
-              onChange={(checked) => handleLandmarkChange(landmark, checked)}
+              checked={filters.landmark === landmark}
+              onChange={(checked) =>
+                onFilterChange("landmark", checked ? landmark : "")
+              }
             />
           ))}
           {filteredLandmarks.length === 0 && (
-            <p className="text-sm text-gray-500">No landmarks found</p>
+            <p className="text-sm text-gray-500">No landmarks available</p>
+          )}
+        </div>
+      </FilterSection>
+
+      <FilterSection title="Major Markets">
+        <div className="max-h-60 space-y-2 overflow-y-auto">
+          {markets.map((market) => (
+            <Checkbox
+              key={market}
+              label={market}
+              checked={filters.location === market}
+              onChange={(checked) =>
+                onFilterChange("location", checked ? market : "")
+              }
+            />
+          ))}
+          {markets.length === 0 && (
+            <p className="text-sm text-gray-500">No markets available</p>
+          )}
+        </div>
+      </FilterSection>
+
+      <FilterSection title="Availability">
+        {(
+          [
+            ["available", "Available Now"],
+            ["booked", "Booked"],
+            ["unavailable", "Unavailable"],
+          ] as const
+        ).map(([value, label]) => (
+          <Checkbox
+            key={value}
+            label={label}
+            checked={filters.availability === value}
+            onChange={(checked) =>
+              onFilterChange("availability", checked ? value : "")
+            }
+          />
+        ))}
+      </FilterSection>
+
+      <FilterSection title="Target Audience">
+        <div className="max-h-60 space-y-2 overflow-y-auto">
+          {audiences.map((audience) => (
+            <Checkbox
+              key={audience}
+              label={audience}
+              checked={filters.targetAudience === audience}
+              onChange={(checked) =>
+                onFilterChange("targetAudience", checked ? audience : "")
+              }
+            />
+          ))}
+          {audiences.length === 0 && (
+            <p className="text-sm text-gray-500">No audiences available</p>
           )}
         </div>
       </FilterSection>
     </aside>
   );
-};
-
-export default FilterSidebar;
+}

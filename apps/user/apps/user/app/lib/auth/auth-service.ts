@@ -104,7 +104,11 @@ export class AuthService {
   // 🔑 LOGIN
   // ------------------------------
   async login(data: LoginRequest): Promise<LoginResponse> {
-    const response = await apiClient.post<LoginResponse>("/auth/users/login", data);
+    const response = await apiClient.post<LoginResponse>(
+      "/auth/users/login",
+      data,
+      { skipAuthRedirect: true },
+    );
     
     // Store tokens and user info in cookies using the new response structure
     if (response?.data?.tokens) {

@@ -8,6 +8,13 @@ export interface PaymentOrderItemInput {
 
 export interface InitializePaymentRequest {
   orderItems: PaymentOrderItemInput[];
+  couponCode?: string;
+  brandName?: string;
+  location?: string;
+  industry?: string;
+  objective?: string;
+  additionalInfo?: string;
+  artworkUrl?: string;
 }
 
 export interface OrderItem {
@@ -43,13 +50,28 @@ export class PaymentService {
     );
   }
 
-  async getOrderByReference(
-    reference: string
-  ): Promise<InitializePaymentResponse> {
-    return apiClient.get<InitializePaymentResponse>(
-      `${this.basePath}/reference/${reference}`
-    );
-  }
 }
 
 export const paymentService = new PaymentService();
+
+export function isSuccessfulPaymentStatus(status?: string): boolean {
+  return ["paid", "success", "successful", "completed", "confirmed", "succeeded", "settled"].includes(
+    status?.trim().toLowerCase() ?? "",
+  );
+}
+
+export function isFailedPaymentStatus(status?: string): boolean {
+  const normalizedStatus = status?.trim().toLowerCase().replace(/[\s-]+/g, "_");
+  return [
+    "failed",
+    "failure",
+    "payment_failed",
+    "unsuccessful",
+    "declined",
+    "cancelled",
+    "canceled",
+    "rejected",
+    "expired",
+    "error",
+  ].includes(normalizedStatus ?? "");
+}

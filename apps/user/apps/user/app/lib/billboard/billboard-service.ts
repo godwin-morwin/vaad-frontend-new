@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import type { AxiosRequestConfig } from "axios";
 import { apiClient } from "@/app/lib/api/client";
 
 export interface Billboard {
@@ -214,7 +215,10 @@ export class BillboardService {
   // EXPLORE — all billboards (paginated list)
   // GET /billboards/explore
   // ─────────────────────────────────────────────
-  async exploreBillboards(params: ExploreParams = {}): Promise<SearchResponse> {
+  async exploreBillboards(
+    params: ExploreParams = {},
+    requestConfig: AxiosRequestConfig & { skipAuthRedirect?: boolean } = {}
+  ): Promise<SearchResponse> {
     const queryParams = new URLSearchParams();
 
     Object.entries(params).forEach(([key, value]) => {
@@ -228,7 +232,7 @@ export class BillboardService {
       ? `${this.baseUrl}/explore?${queryString}`
       : `${this.baseUrl}/explore`;
 
-    const response = await apiClient.get<ExploreResponse>(url);
+    const response = await apiClient.get<ExploreResponse>(url, requestConfig);
     const result = response?.result;
     const items = this.normalizeList(result?.foundItems || []);
 
@@ -299,10 +303,14 @@ export class BillboardService {
     return this.exploreBillboards({ page, limit });
   }
 
-  async getBillboardById(id: string): Promise<Billboard> {
+  async getBillboardById(
+    id: string,
+    requestConfig: AxiosRequestConfig & { skipAuthRedirect?: boolean } = {}
+  ): Promise<Billboard> {
     try {
       const response = await apiClient.get<Billboard>(
-        `${this.baseUrl}/${id}`
+        `${this.baseUrl}/${id}`,
+        requestConfig
       );
       return this.normalizeBillboard(response);
     } catch (error) {
@@ -310,7 +318,7 @@ export class BillboardService {
       const exploreResponse = await this.exploreBillboards({
         limit: 100,
         page: 1,
-      });
+      }, requestConfig);
       const match = (exploreResponse.foundItems || []).find(
         (item) =>
           item._id === id || item.id === id || item.billboardId === id

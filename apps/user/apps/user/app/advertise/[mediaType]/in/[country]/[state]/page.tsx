@@ -3,46 +3,139 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import BillboardFullCard from "@/app/components/billboard/BillboardFullCard";
 import FilterSidebar from "@/app/components/billboard/FilterSidebar";
 import SearchBox from "@/app/components/SearchBox";
 import { useAssets } from "@/app/hooks/useAssets";
 import { Billboard } from "@/app/types/billboard";
 import Navbar from "@/app/components/layout/Navbar";
-import Link from "next/link";
 import Footer from "@/app/components/Home/Footer";
 import SimilarMedia from "@/app/components/SimilarMedia";
 import ResultsFilterBar from "@/app/components/ResultsFilterBar";
 import { useCartDrawer } from "@/app/hooks/useCartDrawer";
 import { billboardService } from "@/app/lib/billboard/billboard-service";
+import PageBanner from "@/app/components/PageBanner";
 
 type Filters = {
   mediaType: string;
   productType: string;
   location: string;
-  serviceType?: string;
   minRate?: number;
   maxRate?: number;
-};
-
-// Helper to format URL parameters
-const formatUrlParam = (text: string) => {
-  return text.toLowerCase().replace(/\s+/g, '-').replace(/-+/g, '-');
+  landmark: string;
+  availability: "" | "available" | "booked" | "unavailable";
+  targetAudience: string;
 };
 
 const formatDisplayText = (text: string) => {
-  return text.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+  return text.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+};
+
+const normalizeFilterText = (value: unknown) =>
+  String(value ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+const getAvailabilityStatus = (
+  item: any,
+): "available" | "booked" | "unavailable" => {
+  const explicitStatuses = [
+    item.availabilityStatus,
+    item.bookingStatus,
+    item.status,
+    typeof item.availability === "string" ? item.availability : undefined,
+  ]
+    .filter((value) => typeof value === "string" && value.trim())
+    .map((value: string) => value.toLowerCase().replace(/[\s_-]+/g, " "));
+
+  if (
+    explicitStatuses.some((status) => ["booked", "reserved"].includes(status))
+  ) {
+    return "booked";
+  }
+  if (
+    explicitStatuses.some((status) =>
+      ["available", "available now", "active"].includes(status),
+    )
+  ) {
+    return "available";
+  }
+  if (
+    explicitStatuses.some((status) =>
+      ["unavailable", "not available", "inactive"].includes(status),
+    )
+  ) {
+    return "unavailable";
+  }
+
+  if (item.availability === true) return "available";
+  if (item.availability === false) return "unavailable";
+
+  const availableDate = item.availableDate
+    ? new Date(item.availableDate)
+    : null;
+  if (
+    availableDate &&
+    !Number.isNaN(availableDate.getTime()) &&
+    availableDate <= new Date()
+  ) {
+    return "available";
+  }
+
+  return "unavailable";
+};
+
+const matchesFilters = (item: any, filters: Filters) => {
+  const rate = Number(item.rate ?? item.price ?? 0);
+  const audienceValues = Array.isArray(item.targetAudience)
+    ? item.targetAudience
+    : item.targetAudience
+      ? [item.targetAudience]
+      : [];
+  const normalizedAudience = audienceValues.map((value: string) =>
+    String(value).toLowerCase(),
+  );
+  return (
+    (!filters.mediaType ||
+      normalizeFilterText(item.mediaType) ===
+        normalizeFilterText(filters.mediaType)) &&
+    (!filters.productType ||
+      String(item.printProductType || "").toLowerCase() ===
+        filters.productType.toLowerCase()) &&
+    (!filters.location ||
+      String(item.state || "").toLowerCase() ===
+        filters.location.toLowerCase()) &&
+    (filters.minRate === undefined || rate >= filters.minRate) &&
+    (filters.maxRate === undefined || rate <= filters.maxRate) &&
+    (!filters.landmark ||
+      String(item.landmark || "")
+        .toLowerCase()
+        .includes(filters.landmark.toLowerCase())) &&
+    (!filters.availability ||
+      getAvailabilityStatus(item) === filters.availability) &&
+    (!filters.targetAudience ||
+      normalizedAudience.some((value: string) =>
+        value.includes(filters.targetAudience.toLowerCase()),
+      ))
+  );
+};
+
+const getPriceRangeLabel = (filters: Filters) => {
+  if (filters.minRate === undefined) return undefined;
+  if (filters.maxRate === undefined) {
+    return `₦${filters.minRate.toLocaleString()}+`;
+  }
+  return `₦${filters.minRate.toLocaleString()} - ₦${filters.maxRate.toLocaleString()}`;
 };
 
 export default function BillboardListingPage() {
   const params = useParams();
-  const router = useRouter();
   const { mediaType, country, state } = params;
-  
+
   const [mounted, setMounted] = useState(false);
   const { assets, isLoading: assetsLoading, getCitiesForState } = useAssets();
-  const [activeFilter, setActiveFilter] = useState("Non-illuminated");
   const { open, openCart, closeCart } = useCartDrawer();
 
   // Initialize filters from URL parameters
@@ -50,9 +143,11 @@ export default function BillboardListingPage() {
     mediaType: formatDisplayText(mediaType as string),
     productType: "",
     location: formatDisplayText(state as string),
-    serviceType: "",
     minRate: undefined,
     maxRate: undefined,
+    landmark: "",
+    availability: "",
+    targetAudience: "",
   });
 
   const [results, setResults] = useState<Billboard[]>([]);
@@ -69,19 +164,12 @@ export default function BillboardListingPage() {
 
   // Use ref to track initial search
   const initialSearchDoneRef = useRef(false);
+  const searchRequestIdRef = useRef(0);
 
   // Fix hydration - set mounted on client only
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Update URL when filters change
-  const updateUrl = useCallback((newFilters: Filters) => {
-    const mediaTypeParam = formatUrlParam(newFilters.mediaType || "all");
-    const stateParam = formatUrlParam(newFilters.location || "all");
-    
-    router.push(`/advertise/${mediaTypeParam}/in/nigeria/${stateParam}`);
-  }, [router]);
 
   // Update cities when location (state) changes
   useEffect(() => {
@@ -94,55 +182,118 @@ export default function BillboardListingPage() {
   }, [filters.location, assets.statesAndCites, getCitiesForState]);
 
   const handleSearch = useCallback(
-    async (page: number = 1) => {
+    async (page: number = 1, activeFilters: Filters = filters) => {
       if (!mounted) return;
 
+      const requestId = ++searchRequestIdRef.current;
       setIsLoading(true);
       setHasSearched(true);
 
       try {
         const searchParams: any = {
-          limit: pagination.limit,
-          page: page,
+          limit: 100,
+          page: 1,
         };
 
-        if (filters.serviceType) searchParams.serviceType = filters.serviceType;
-        if (filters.mediaType) searchParams.mediaType = filters.mediaType;
-        if (filters.location) searchParams.state = filters.location;
-        if (filters.minRate) searchParams.minRate = filters.minRate;
-        if (filters.maxRate) searchParams.maxRate = filters.maxRate;
+        if (activeFilters.mediaType)
+          searchParams.mediaType = activeFilters.mediaType;
+        if (activeFilters.productType)
+          searchParams.printProductType = activeFilters.productType;
+        if (activeFilters.location) searchParams.state = activeFilters.location;
+        if (activeFilters.minRate !== undefined)
+          searchParams.minRate = activeFilters.minRate;
+        if (activeFilters.maxRate !== undefined)
+          searchParams.maxRate = activeFilters.maxRate;
+        if (activeFilters.landmark)
+          searchParams.landmark = activeFilters.landmark;
+        if (activeFilters.availability) {
+          searchParams.availability = activeFilters.availability;
+        }
+        if (activeFilters.targetAudience)
+          searchParams.targetAudience = activeFilters.targetAudience;
 
         const response = await billboardService.searchBillboards(searchParams);
-        
-        const fetchedResults = response.foundItems || [];
-        
-        const transformedResults: Billboard[] = fetchedResults.map((item: any) => ({
-          id: item._id,
-          _id: item._id,
-          title: `${item.mediaType || "Billboard"} at ${item.locationAddress || "Prime Location"}`,
-          location: `${item.locationAddress}, ${item.city}, ${item.state}`,
-          price: `₦${item.rate?.toLocaleString() || "0"} / month`,
-          image: item.photos?.[0] || item.images?.[0] || "/billboard-placeholder.jpg",
-          size: `${item.height || 12}m x ${item.width || 24}m`,
-          impressions: `${Math.floor(Math.random() * 200) + 50}k daily`,
-          mediaType: item.mediaType,
-          locationAddress: item.locationAddress,
-          city: item.city,
-          state: item.state,
-          rate: item.rate,
-          availableDate: item.availableDate,
-          rating: item.rating,
-          description: item.description,
-        }));
+        if (requestId !== searchRequestIdRef.current) return;
 
-        setResults(transformedResults);
+        const fetchedResults = (response.foundItems || []).filter((item) =>
+          matchesFilters(item, activeFilters),
+        );
+
+        const transformedResults: Billboard[] = fetchedResults.map(
+          (item: any) => ({
+            id: item._id,
+            _id: item._id,
+            title: `${item.mediaType || "Billboard"} at ${item.locationAddress || "Prime Location"}`,
+            location: `${item.locationAddress}, ${item.city}, ${item.state}`,
+            price: `₦${Number(item.rate ?? item.price ?? 0).toLocaleString()} / month`,
+            image:
+              item.photos?.[0] ||
+              item.images?.[0] ||
+              "/billboard-placeholder.jpg",
+            size: `${item.height || 12}m x ${item.width || 24}m`,
+            impressions: item.impressions
+              ? `${Number(item.impressions).toLocaleString()} daily`
+              : undefined,
+            mediaType: item.mediaType,
+            locationAddress: item.locationAddress,
+            city: item.city,
+            state: item.state,
+            rate: item.rate,
+            availableDate: item.availableDate,
+            rating: item.rating,
+            description: item.description,
+            availableInDays: item.availableDate
+              ? Math.max(
+                  0,
+                  Math.ceil(
+                    (new Date(item.availableDate).getTime() - Date.now()) /
+                      (1000 * 60 * 60 * 24),
+                  ),
+                )
+              : undefined,
+            availabilityStatus: getAvailabilityStatus(item),
+            availabilityLabel: (() => {
+              const status = getAvailabilityStatus(item);
+              if (status === "booked") return "Booked";
+
+              const availableDate = item.availableDate
+                ? new Date(item.availableDate)
+                : null;
+              if (
+                availableDate &&
+                !Number.isNaN(availableDate.getTime()) &&
+                availableDate > new Date()
+              ) {
+                const daysUntilAvailable = Math.ceil(
+                  (availableDate.getTime() - Date.now()) /
+                    (1000 * 60 * 60 * 24),
+                );
+                return `Available in ${daysUntilAvailable} day${daysUntilAvailable === 1 ? "" : "s"}`;
+              }
+
+              if (status === "available") return "Available";
+              return "Unavailable";
+            })(),
+          }),
+        );
+
+        const totalPages = Math.ceil(
+          transformedResults.length / pagination.limit,
+        );
+        setResults(
+          transformedResults.slice(
+            (page - 1) * pagination.limit,
+            page * pagination.limit,
+          ),
+        );
         setPagination({
-          page: response.page || page,
+          page,
           limit: pagination.limit,
-          total: response.count || transformedResults.length,
-          totalPages: response.totalPages || Math.ceil((response.count || transformedResults.length) / pagination.limit),
+          total: transformedResults.length,
+          totalPages,
         });
       } catch (error) {
+        if (requestId !== searchRequestIdRef.current) return;
         console.error("Search failed:", error);
         setResults([]);
         setPagination({
@@ -152,21 +303,69 @@ export default function BillboardListingPage() {
           totalPages: 0,
         });
       } finally {
-        setIsLoading(false);
+        if (requestId === searchRequestIdRef.current) {
+          setIsLoading(false);
+        }
       }
     },
-    [mounted, pagination.limit, filters]
+    [mounted, pagination.limit, filters],
   );
 
-  const handleFilterChange = useCallback((key: keyof Filters, value: string) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    updateUrl(newFilters);
-  }, [filters, updateUrl]);
+  const handleFilterChange = useCallback(
+    <K extends keyof Filters>(key: K, value: Filters[K]) => {
+      const newFilters = { ...filters, [key]: value };
+      setFilters(newFilters);
+      handleSearch(1, newFilters);
+    },
+    [filters, handleSearch],
+  );
+
+  const handleMediaTypeChange = useCallback(
+    (mediaType: string, productType: string) => {
+      const newFilters = { ...filters, mediaType, productType };
+      setFilters(newFilters);
+      handleSearch(1, newFilters);
+    },
+    [filters, handleSearch],
+  );
+
+  const handlePriceRangeChange = useCallback(
+    (range: { minRate?: number; maxRate?: number }) => {
+      const newFilters = { ...filters, ...range };
+      setFilters(newFilters);
+      handleSearch(1, newFilters);
+    },
+    [filters, handleSearch],
+  );
+
+  const handleResultChipChange = (filter: string) => {
+    const availabilityOptions = {
+      "Available Now": "available",
+      Booked: "booked",
+      Unavailable: "unavailable",
+    } as const;
+    if (filter in availabilityOptions) {
+      const status =
+        availabilityOptions[filter as keyof typeof availabilityOptions];
+      handleFilterChange(
+        "availability",
+        filters.availability === status ? "" : status,
+      );
+      return;
+    }
+    if (filter === getPriceRangeLabel(filters)) {
+      handlePriceRangeChange({});
+    }
+  };
 
   // Auto search when mounted
   useEffect(() => {
-    if (mounted && !assetsLoading && filters.mediaType && !initialSearchDoneRef.current) {
+    if (
+      mounted &&
+      !assetsLoading &&
+      filters.mediaType &&
+      !initialSearchDoneRef.current
+    ) {
       initialSearchDoneRef.current = true;
       handleSearch(1);
     }
@@ -179,7 +378,7 @@ export default function BillboardListingPage() {
 
   // Get display names
   const getMediaTypeDisplay = () => {
-    return formatDisplayText(mediaType as string);
+    return filters.mediaType || formatDisplayText(mediaType as string);
   };
 
   const getStateDisplay = () => {
@@ -203,38 +402,28 @@ export default function BillboardListingPage() {
           <Navbar transparent />
         </div>
 
-        {/* Header with Breadcrumbs */}
-        <section className="relative w-full bg-linear-to-r from-[#0177AB] to-[#003045] pt-24 pb-20 px-18">
-          <div className="relative z-20">
-            {/* Breadcrumbs */}
-            <div className="text-white/80 text-sm mb-4">
-              <Link href="/" className="hover:text-white transition">Home</Link>
-              <span className="mx-2">/</span>
-              <Link href="/advertise" className="hover:text-white transition">Advertise</Link>
-              <span className="mx-2">/</span>
-              <span className="text-white capitalize">{getMediaTypeDisplay()}</span>
-              <span className="mx-2">/</span>
-              <span className="text-white/60">in</span>
-              <span className="mx-2">/</span>
-              <span className="text-white capitalize">Nigeria</span>
-              <span className="mx-2">/</span>
-              <span className="text-white capitalize">{getStateDisplay()}</span>
-            </div>
-            
-            {/* Page Title */}
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-              {getMediaTypeDisplay()} in {getStateDisplay()}, Nigeria
-            </h1>
-            <p className="text-white/80">
-              Find the best {getMediaTypeDisplay()} advertising spaces in {getStateDisplay()}
-            </p>
-          </div>
-          
+        <PageBanner
+          showHome
+          title={`${getMediaTypeDisplay()} in ${getStateDisplay()}, Nigeria`}
+          subtitle={`Find the best ${getMediaTypeDisplay()} advertising spaces in ${getStateDisplay()}`}
+          breadcrumbs={[
+            { label: "Advertise", href: "/advertise" },
+            { label: getMediaTypeDisplay() },
+            { label: "in" },
+            { label: "Nigeria" },
+            { label: getStateDisplay() },
+          ]}
+          backgroundImage="/images/board.jpg"
+        />
+
+        {/* Main Content */}
+        <section className="pb-12 pt-14 bg-white px-4 sm:px-6 lg:px-18">
           {/* FLOATING SEARCH */}
-          <div className="relative z-20 -mb-38 mt-6">
+          <div className="relative z-20">
             <SearchBox
               filters={filters}
               handleFilterChange={handleFilterChange}
+              onMediaTypeChange={handleMediaTypeChange}
               handleSearch={() => handleSearch(1)}
               isLoading={isLoading}
               assets={assets}
@@ -242,15 +431,13 @@ export default function BillboardListingPage() {
               locations={Object.keys(assets.statesAndCites || {})}
             />
           </div>
-        </section>
 
-        {/* Main Content */}
-        <section className="pb-12 pt-32 bg-white px-4 sm:px-6 lg:px-18">
-          <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6">
+          <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6 mt-12">
             {/* Sidebar */}
             <div className="col-span-12 md:col-span-3">
               <FilterSidebar
                 onFilterChange={handleFilterChange}
+                onPriceRangeChange={handlePriceRangeChange}
                 filters={filters}
                 assets={assets}
               />
@@ -262,13 +449,24 @@ export default function BillboardListingPage() {
                 title={getMediaTypeDisplay()}
                 total={pagination.total}
                 filters={[
-                  "Non-illuminated",
                   "Available Now",
-                  "Residence",
-                  "₦ 200,000 - ₦ 500,000",
+                  "Booked",
+                  "Unavailable",
+                  ...(getPriceRangeLabel(filters)
+                    ? [getPriceRangeLabel(filters)!]
+                    : []),
                 ]}
-                activeFilter={activeFilter}
-                onFilterChange={(value) => setActiveFilter(value)}
+                activeFilter={
+                  filters.availability === "available"
+                    ? "Available Now"
+                    : filters.availability === "booked"
+                      ? "Booked"
+                      : filters.availability === "unavailable"
+                        ? "Unavailable"
+                        : ""
+                }
+                priceFilterLabel={getPriceRangeLabel(filters)}
+                onFilterChange={handleResultChipChange}
                 openCart={openCart}
                 open={open}
                 closeCart={closeCart}
@@ -298,12 +496,23 @@ export default function BillboardListingPage() {
                         mediaType: "",
                         productType: "",
                         location: "",
-                        serviceType: "",
                         minRate: undefined,
                         maxRate: undefined,
+                        landmark: "",
+                        availability: "",
+                        targetAudience: "",
                       });
                       initialSearchDoneRef.current = false;
-                      handleSearch(1);
+                      handleSearch(1, {
+                        mediaType: "",
+                        productType: "",
+                        location: "",
+                        minRate: undefined,
+                        maxRate: undefined,
+                        landmark: "",
+                        availability: "",
+                        targetAudience: "",
+                      });
                     }}
                     className="mt-6 text-[#0088b5] hover:underline font-medium"
                   >
@@ -331,34 +540,37 @@ export default function BillboardListingPage() {
                   >
                     Previous
                   </button>
-                  
-                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (pagination.totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (pagination.page <= 3) {
-                      pageNum = i + 1;
-                    } else if (pagination.page >= pagination.totalPages - 2) {
-                      pageNum = pagination.totalPages - 4 + i;
-                    } else {
-                      pageNum = pagination.page - 2 + i;
-                    }
-                    
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => handlePageChange(pageNum)}
-                        className={`px-4 py-2 rounded-lg text-sm border ${
-                          pagination.page === pageNum
-                            ? "bg-[#0177AB] text-white border-[#0177AB]"
-                            : "bg-white hover:bg-gray-50"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                  
+
+                  {Array.from(
+                    { length: Math.min(5, pagination.totalPages) },
+                    (_, i) => {
+                      let pageNum;
+                      if (pagination.totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (pagination.page <= 3) {
+                        pageNum = i + 1;
+                      } else if (pagination.page >= pagination.totalPages - 2) {
+                        pageNum = pagination.totalPages - 4 + i;
+                      } else {
+                        pageNum = pagination.page - 2 + i;
+                      }
+
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`px-4 py-2 rounded-lg text-sm border ${
+                            pagination.page === pageNum
+                              ? "bg-[#0177AB] text-white border-[#0177AB]"
+                              : "bg-white hover:bg-gray-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    },
+                  )}
+
                   <button
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={pagination.page === pagination.totalPages}
