@@ -1,9 +1,10 @@
-// apps/admin/next.config.js
+import path from "node:path";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ["@repo/ui"],
-  experimental: {
-    turbopack: false,
+  turbopack: {
+    root: path.resolve(process.cwd(), "../.."),
   },
   images: {
     remotePatterns: [
