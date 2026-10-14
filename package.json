@@ -46,6 +46,7 @@
     "eslint-config-next": "16.1.6",
     "only-allow": "^1.2.2",
     "tailwindcss": "^4",
+    "turbo": "2.11.7",
     "typescript": "^5"
   }
 }
