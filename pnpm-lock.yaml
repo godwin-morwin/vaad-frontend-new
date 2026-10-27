@@ -266,6 +266,9 @@ importers:
       '@openai/codex':
         specifier: ^0.148.0
         version: 0.148.0
+      '@radix-ui/react-slot':
+        specifier: ^1.5.0
+        version: 1.5.0(@types/react@19.2.2)(react@19.2.3)
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -326,6 +329,9 @@ importers:
       tailwind-merge:
         specifier: ^3.7.0
         version: 3.7.0
+      tailwindcss-animate:
+        specifier: ^1.0.7
+        version: 1.0.7(tailwindcss@4.3.3)
       zod:
         specifier: ^4.3.6
         version: 4.6.6
