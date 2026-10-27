@@ -247,10 +247,104 @@ importers:
         version: 5.9.2
 
   apps/user:
+    dependencies:
+      '@emotion/react':
+        specifier: ^11.14.0
+        version: 11.14.0(@types/react@19.2.2)(react@19.2.3)(supports-color@7.2.0)
+      '@emotion/styled':
+        specifier: ^11.14.1
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.2)(react@19.2.3)(supports-color@7.2.0))(@types/react@19.2.2)(react@19.2.3)(supports-color@7.2.0)
+      '@hookform/resolvers':
+        specifier: ^5.2.2
+        version: 5.9.1(react-hook-form@7.90.0(@types/react@19.2.2)(react@19.2.3))(zod@4.6.6)
+      '@mui/icons-material':
+        specifier: ^7.3.9
+        version: 7.3.11(@mui/material@7.3.11(@emotion/react@11.14.0(@types/react@19.2.2)(react@19.2.3)(supports-color@7.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.2)(react@19.2.3)(supports-color@7.2.0))(@types/react@19.2.2)(react@19.2.3)(supports-color@7.2.0))(@types/react@19.2.2)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.2)(react@19.2.3)
+      '@mui/material':
+        specifier: ^7.3.9
+        version: 7.3.11(@emotion/react@11.14.0(@types/react@19.2.2)(react@19.2.3)(supports-color@7.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.2)(react@19.2.3)(supports-color@7.2.0))(@types/react@19.2.2)(react@19.2.3)(supports-color@7.2.0))(@types/react@19.2.2)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@openai/codex':
+        specifier: ^0.148.0
+        version: 0.148.0
+      axios:
+        specifier: ^1.13.6
+        version: 1.20.0(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
+      cookies-next:
+        specifier: ^6.1.1
+        version: 6.1.1(next@16.2.4(@babel/core@7.29.7(supports-color@7.2.0))(babel-plugin-macros@3.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
+      framer-motion:
+        specifier: ^12.38.0
+        version: 12.43.0(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      gray-matter:
+        specifier: ^4.0.3
+        version: 4.0.3
+      highlight.js:
+        specifier: ^11.11.1
+        version: 11.12.0
+      lucide-react:
+        specifier: ^0.577.0
+        version: 0.577.0(react@19.2.3)
+      mapbox-gl:
+        specifier: ^3.20.0
+        version: 3.32.0
+      next:
+        specifier: 16.2.4
+        version: 16.2.4(@babel/core@7.29.7(supports-color@7.2.0))(babel-plugin-macros@3.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      react:
+        specifier: 19.2.3
+        version: 19.2.3
+      react-dom:
+        specifier: 19.2.3
+        version: 19.2.3(react@19.2.3)
+      react-hook-form:
+        specifier: ^7.71.2
+        version: 7.90.0(@types/react@19.2.2)(react@19.2.3)
+      react-markdown:
+        specifier: ^10.1.0
+        version: 10.1.0(@types/react@19.2.2)(react@19.2.3)(supports-color@7.2.0)
+      react-select:
+        specifier: ^5.10.2
+        version: 5.10.2(@types/react@19.2.2)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(supports-color@7.2.0)
+      rehype-highlight:
+        specifier: ^7.0.2
+        version: 7.0.2
+      remark-gfm:
+        specifier: ^4.0.1
+        version: 4.0.1(supports-color@7.2.0)
+      zod:
+        specifier: ^4.3.6
+        version: 4.6.6
     devDependencies:
+      '@tailwindcss/postcss':
+        specifier: ^4
+        version: 4.3.3
+      '@types/node':
+        specifier: ^20
+        version: 20.19.43
+      '@types/react':
+        specifier: ^19
+        version: 19.2.2
+      '@types/react-dom':
+        specifier: ^19
+        version: 19.2.2(@types/react@19.2.2)
+      eslint:
+        specifier: ^9
+        version: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
+      eslint-config-next:
+        specifier: 16.1.6
+        version: 16.1.6(@typescript-eslint/parser@8.71.1(eslint@9.39.5(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.2))(eslint@9.39.5(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.2)
+      only-allow:
+        specifier: ^1.2.2
+        version: 1.2.2
+      tailwindcss:
+        specifier: ^4
+        version: 4.3.3
       turbo:
         specifier: 2.11.7
         version: 2.11.7
+      typescript:
+        specifier: ^5
+        version: 5.9.2
 
   packages/eslint-config:
     devDependencies:
