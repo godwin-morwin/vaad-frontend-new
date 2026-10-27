@@ -266,6 +266,9 @@ importers:
       '@openai/codex':
         specifier: ^0.148.0
         version: 0.148.0
+      '@repo/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       axios:
         specifier: ^1.13.6
         version: 1.20.0(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)

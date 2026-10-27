@@ -29,6 +29,7 @@
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
     "@openai/codex": "^0.148.0",
+    "@repo/ui": "workspace:*",
     "axios": "^1.13.6",
     "cookies-next": "^6.1.1",
     "framer-motion": "^12.38.0",
